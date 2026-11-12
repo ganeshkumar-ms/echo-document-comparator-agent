@@ -54,7 +54,7 @@ def _resolve_documents(body: dict) -> list:
             'name': body.get('file_name') or 'document.txt',
             'content_base64': body.get('file_content_base64'),
             's3_key': body.get('s3_key'),
-            'version_label': 'V1',
+            'version_label': 'File 1',
         })
 
     resolved = []
@@ -62,7 +62,7 @@ def _resolve_documents(body: dict) -> list:
         if not isinstance(doc, dict):
             continue
         name = doc.get('name') or f'document_{idx + 1}.txt'
-        ver = doc.get('version_label') or ('V1' if idx == 0 else 'V2')
+        ver = doc.get('version_label') or ('File 1' if idx == 0 else 'File 2')
         text = ''
         if doc.get('extracted_text'):
             text = str(doc['extracted_text'])[:45000]

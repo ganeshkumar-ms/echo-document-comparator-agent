@@ -47,13 +47,13 @@ def run_suite(base_url: str, check_root_html: bool = False):
     assert chat.get('type') == 'chat' and len(chat.get('message', '')) > 20, f'Chat failed: {chat}'
     print(f"  [3/6] Conversational Mode 1 PASS: {chat['message'][:75]}")
 
-    # [4/6] Inline V1 vs V2 semantic comparison (Spec Example: 30 days -> 15 days)
+    # [4/6] Inline File 1 vs File 2 semantic comparison (Spec Example: 30 days -> 15 days)
     comp = req_json(
         f'{base}/api/compare',
         {
             'message': (
-                'Previous: Submit the required documents within 30 days. '
-                'New: Submit the required documents within 15 days.'
+                'File 1: Submit the required documents within 30 days. '
+                'File 2: Submit the required documents within 15 days.'
             )
         },
     )
@@ -62,16 +62,16 @@ def run_suite(base_url: str, check_root_html: bool = False):
     assert '30' in joined_comp and '15' in joined_comp, f'Missing 30->15 details: {comp}'
     print(f"  [4/6] Inline Semantic Diff PASS: {comp.get('overall_impact')} ({len(comp['changes'])} changes)")
 
-    # [5/6] Dual File V1 vs V2 Comparison + Document Viewer
-    v1_doc = (
-        'ACME MOTOR POLICY TERMS (V1)\n'
+    # [5/6] Dual File 1 vs File 2 Comparison + Document Viewer
+    f1_doc = (
+        'ACME MOTOR POLICY TERMS (FILE 1)\n'
         'Effective Date: January 1, 2025\n'
         'Standard Deductible: $500 per claim.\n'
         'Claim Notice: Insured must report incidents within 30 days via email or portal.\n'
         'Roadside Assistance: Included at $0 extra charge.'
     )
-    v2_doc = (
-        'ACME MOTOR POLICY TERMS (V2)\n'
+    f2_doc = (
+        'ACME MOTOR POLICY TERMS (FILE 2)\n'
         'Effective Date: July 1, 2025\n'
         'Standard Deductible: $1,000 per claim.\n'
         'Claim Notice: Insured must report incidents within 15 days strictly through the online Claims Portal.\n'
@@ -80,25 +80,25 @@ def run_suite(base_url: str, check_root_html: bool = False):
     file_comp = req_json(
         f'{base}/api/compare',
         {
-            'message': 'Compare policy V1 and V2 and explain every impact for customers.',
+            'message': 'Compare File 1 and File 2 and explain every impact for customers.',
             'documents': [
                 {
-                    'name': 'policy_v1.txt',
-                    'version_label': 'V1',
-                    'content_base64': base64.b64encode(v1_doc.encode('utf-8')).decode('ascii'),
+                    'name': 'policy_file1.txt',
+                    'version_label': 'File 1',
+                    'content_base64': base64.b64encode(f1_doc.encode('utf-8')).decode('ascii'),
                 },
                 {
-                    'name': 'policy_v2.txt',
-                    'version_label': 'V2',
-                    'content_base64': base64.b64encode(v2_doc.encode('utf-8')).decode('ascii'),
+                    'name': 'policy_file2.txt',
+                    'version_label': 'File 2',
+                    'content_base64': base64.b64encode(f2_doc.encode('utf-8')).decode('ascii'),
                 },
             ],
         },
     )
-    assert file_comp.get('type') == 'comparison' and len(file_comp.get('changes', [])) >= 2, f'V1/V2 file compare failed: {file_comp}'
+    assert file_comp.get('type') == 'comparison' and len(file_comp.get('changes', [])) >= 2, f'File 1/File 2 compare failed: {file_comp}'
     assert len(file_comp.get('viewer_documents') or []) == 2, f"Expected 2 viewer documents: {file_comp.get('viewer_documents')}"
     print(
-        f"  [5/6] Dual File V1 vs V2 + Viewer PASS: {file_comp.get('overall_impact')} "
+        f"  [5/6] Dual File 1 vs File 2 + Viewer PASS: {file_comp.get('overall_impact')} "
         f"({len(file_comp['changes'])} changes, {len(file_comp['viewer_documents'])} viewer docs)"
     )
 
@@ -110,8 +110,8 @@ def run_suite(base_url: str, check_root_html: bool = False):
         {
             'message': 'Check if anything materially changed.',
             'documents': [
-                {'name': 'plan_v1.txt', 'version_label': 'V1', 'content_base64': same_b64},
-                {'name': 'plan_v2.txt', 'version_label': 'V2', 'content_base64': same_b64},
+                {'name': 'plan_file1.txt', 'version_label': 'File 1', 'content_base64': same_b64},
+                {'name': 'plan_file2.txt', 'version_label': 'File 2', 'content_base64': same_b64},
             ],
         },
     )

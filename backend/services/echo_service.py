@@ -42,7 +42,7 @@ ECHO_SYSTEM_PROMPT = """You are ECHO, an Enterprise AI Document Comparator ("See
 Your core mission is answering: "What changed between these documents, and why does the change matter?"
 
 Traditional diff tools only say "Paragraph 28 changed." That does not help anyone know whether a change actually matters.
-ECHO compares Document V1 (Previous / Baseline) against Document V2 (New / Revised), detects meaningful semantic shifts, and explains their operational, financial, legal, and customer impact.
+ECHO compares File 1 against File 2, detects meaningful semantic shifts, and explains their operational, financial, legal, and customer impact.
 
 === CHANGE SIGNALS TO DETECT ===
 - Added (new clauses, rights, fees, steps, obligations)
@@ -63,8 +63,8 @@ MODE 1: CONVERSATIONAL & MULTILINGUAL ASSISTANCE (type: "chat")
 ==================================================
 Trigger MODE 1 whenever:
 - The user greets you, sends casual messages ("bro", "thanks", "how are you"), or asks a general question (e.g., "What does ECHO detect?", "How does ECHO differ from a plain text diff?").
-- The user asks a follow-up question about a previous comparison without providing new versions to compare.
-- The user attaches ONLY ONE document (V1) without any second version (V2) text or inline changes to compare against yet: acknowledge loading V1 concisely and ask for Document V2 (upload or paste).
+- The user asks a follow-up question about a previous comparison without providing new files to compare.
+- The user attaches ONLY ONE file (File 1) without any second file (File 2) text or inline changes to compare against yet: acknowledge loading File 1 concisely and ask for File 2 (upload or paste).
 
 Respond ONLY with valid JSON:
 {
@@ -73,22 +73,22 @@ Respond ONLY with valid JSON:
 }
 
 ==================================================
-MODE 2: SEMANTIC VERSION COMPARISON (type: "comparison")
+MODE 2: SEMANTIC FILE COMPARISON (type: "comparison")
 ==================================================
 Trigger MODE 2 whenever:
-- Two documents (Document V1 and Document V2) are supplied, OR
-- The user pastes both Previous (V1) and New (V2) text / clauses inline (e.g. "Previous: ... New: ...", "V1: ... V2: ...", "Old: ... Updated: ...", "Compare these two:"), OR
-- The user uploads Document V2 with prior Document V1 context available.
+- Two files (File 1 and File 2) are supplied, OR
+- The user pastes both File 1 and File 2 text / clauses inline (e.g. "File 1: ... File 2: ...", "Previous: ... New: ...", "Compare these two:"), OR
+- The user uploads File 2 with prior File 1 context available.
 
 Respond ONLY with valid JSON matching this exact schema:
 {
   "type": "comparison",
   "comparison_title": "Concise 3-6 word comparison title",
-  "v1_label": "Baseline / V1 label or filename",
-  "v2_label": "Updated / V2 label or filename",
+  "v1_label": "File 1 label or filename",
+  "v2_label": "File 2 label or filename",
   "overall_impact": "HIGH" | "MEDIUM" | "LOW" | "NO_MATERIAL_CHANGE",
   "impact_headline": "1 crisp executive sentence explaining the single most consequential change.",
-  "summary": "2 clear sentences summarizing what changed between V1 and V2 and why it matters.",
+  "summary": "2 clear sentences summarizing what changed between File 1 and File 2 and why it matters.",
   "metrics": {
     "total_changes": 4,
     "high_impact": 2,
@@ -101,8 +101,8 @@ Respond ONLY with valid JSON matching this exact schema:
       "change_type": "Deadline Change",
       "severity": "HIGH" | "MEDIUM" | "LOW",
       "section_or_topic": "Document Submission Window",
-      "previous_text": "Exact short excerpt from V1 (or 'Not present in V1' if added)",
-      "new_text": "Exact short excerpt from V2 (or 'Removed in V2' if deleted)",
+      "previous_text": "Exact short excerpt from File 1 (or 'Not present in File 1' if added)",
+      "new_text": "Exact short excerpt from File 2 (or 'Removed in File 2' if deleted)",
       "what_changed": "Concise human explanation of the factual change (e.g., Submission deadline shortened from 30 days to 15 days).",
       "why_it_matters": "Concrete operational/customer/compliance impact (e.g., Customers now have half as much time to gather required proof, increasing missed-deadline denials).",
       "action_required": "Specific next step for teams or customers."
@@ -118,8 +118,8 @@ Respond ONLY with valid JSON matching this exact schema:
 CRITICAL RULES:
 - Return ONLY raw valid JSON (no markdown code fences).
 - Prioritize substantive semantic differences over harmless punctuation/formatting noise.
-- Never fabricate changes that do not exist in V1 or V2.
-- If V1 and V2 are functionally identical despite formatting tweaks, set overall_impact to "NO_MATERIAL_CHANGE".
+- Never fabricate changes that do not exist in File 1 or File 2.
+- If File 1 and File 2 are functionally identical despite formatting tweaks, set overall_impact to "NO_MATERIAL_CHANGE".
 """
 
 GREETING_REGEX = re.compile(
@@ -128,10 +128,10 @@ GREETING_REGEX = re.compile(
 )
 
 GREETING_RESPONSES = [
-    "Hi there! Upload Document V1 and V2 — or paste Previous and New text — and I'll pinpoint every meaningful change and explain why it matters.",
+    "Hi there! Upload File 1 and File 2 — or paste two texts side by side — and I'll pinpoint every meaningful change and explain why it matters.",
     "Hello! Ready to compare two policy drafts, contracts, SOPs, or customer notices for deadline, fee, amount, and requirement shifts.",
-    "Hey! Attach your baseline V1 and updated V2 files (or paste two versions inline), and I'll break down what changed, who is impacted, and what to do next.",
-    "Welcome to ECHO! Drop in V1 and V2 documents anytime to see added, removed, or modified terms along with their real-world impact.",
+    "Hey! Attach your File 1 and File 2 documents (or paste both texts inline), and I'll break down what changed, who is impacted, and what to do next.",
+    "Welcome to ECHO! Drop in File 1 and File 2 anytime to see added, removed, or modified terms along with their real-world impact.",
 ]
 
 ALLOWED_IMPACTS = {'HIGH', 'MEDIUM', 'LOW', 'NO_MATERIAL_CHANGE'}
@@ -161,19 +161,19 @@ def _strip_json_fences(raw_text: str) -> str:
 
 
 def _detect_inline_v1_v2(text: str):
-    """Extract inline V1/Previous vs V2/New segments when user pastes both in a single prompt."""
+    """Extract inline File 1 / Previous vs File 2 / New segments when user pastes both in a single prompt."""
     if not text:
         return None, None
     patterns = [
-        re.compile(r'(?:previous|version\s*1|v1|old|before)\s*[:\-]\s*(.+?)\s+(?:new|version\s*2|v2|updated|revised|after)\s*[:\-]\s*(.+)', re.I | re.S),
+        re.compile(r'(?:file\s*1|doc(?:ument)?\s*1|previous|version\s*1|v1|old|before)\s*[:\-]\s*(.+?)\s+(?:file\s*2|doc(?:ument)?\s*2|new|version\s*2|v2|updated|revised|after)\s*[:\-]\s*(.+)', re.I | re.S),
     ]
     for pat in patterns:
         m = pat.search(text)
         if m:
-            v1 = m.group(1).strip()
-            v2 = m.group(2).strip()
-            if v1 and v2:
-                return v1, v2
+            f1 = m.group(1).strip()
+            f2 = m.group(2).strip()
+            if f1 and f2:
+                return f1, f2
     return None, None
 
 
@@ -198,7 +198,7 @@ def _classify_line_change(old_line: str, new_line: str) -> str:
     return 'Modified'
 
 
-def _deterministic_fallback(v1_text: str, v2_text: str, v1_label: str = 'Document V1', v2_label: str = 'Document V2') -> dict:
+def _deterministic_fallback(v1_text: str, v2_text: str, v1_label: str = 'File 1', v2_label: str = 'File 2') -> dict:
     v1_lines = [l.strip() for l in (v1_text or '').splitlines() if l.strip()]
     v2_lines = [l.strip() for l in (v2_text or '').splitlines() if l.strip()]
     matcher = difflib.SequenceMatcher(None, v1_lines, v2_lines)
@@ -217,22 +217,22 @@ def _deterministic_fallback(v1_text: str, v2_text: str, v1_label: str = 'Documen
         if tag == 'insert':
             added_cnt += 1
             what = f'Added new provision: "{new_seg[:140]}"'
-            why = 'Introduces new content or obligations that were not present in the baseline version.'
+            why = 'Introduces new content or obligations that were not present in File 1.'
         elif tag == 'delete':
             removed_cnt += 1
-            what = f'Removed baseline provision: "{prev_seg[:140]}"'
-            why = 'Removes text or safeguards present in V1, altering reader obligations or entitlements.'
+            what = f'Removed provision from File 1: "{prev_seg[:140]}"'
+            why = 'Removes text or safeguards present in File 1, altering reader obligations or entitlements.'
         else:
             modified_cnt += 1
             what = f'Updated from "{prev_seg[:100]}" to "{new_seg[:100]}"'
-            why = 'Alters numeric thresholds, timing, obligations, or scope compared to V1.'
+            why = 'Alters numeric thresholds, timing, obligations, or scope between File 1 and File 2.'
 
         changes.append({
             'change_type': ctype,
             'severity': severity,
             'section_or_topic': f'Section / Line {i1 + 1}',
-            'previous_text': prev_seg[:320] or 'Not present in V1',
-            'new_text': new_seg[:320] or 'Removed in V2',
+            'previous_text': prev_seg[:320] or 'Not present in File 1',
+            'new_text': new_seg[:320] or 'Removed in File 2',
             'what_changed': what,
             'why_it_matters': why,
             'action_required': 'Review affected operational rules and stakeholder communications.',
@@ -245,8 +245,8 @@ def _deterministic_fallback(v1_text: str, v2_text: str, v1_label: str = 'Documen
             'v1_label': v1_label,
             'v2_label': v2_label,
             'overall_impact': 'NO_MATERIAL_CHANGE',
-            'impact_headline': 'No substantive textual differences were detected between V1 and V2.',
-            'summary': 'Both versions share identical normalized content. No operational or customer impact requires follow-up.',
+            'impact_headline': 'No substantive textual differences were detected between File 1 and File 2.',
+            'summary': 'Both files share identical normalized content. No operational or customer impact requires follow-up.',
             'metrics': {
                 'total_changes': 0,
                 'high_impact': 0,
@@ -314,10 +314,10 @@ def _normalize_comparison(payload: dict, fallback_v1_label: str, fallback_v2_lab
             'change_type': ctype,
             'severity': sev,
             'section_or_topic': str(item.get('section_or_topic') or 'Document Clause').strip(),
-            'previous_text': str(item.get('previous_text') or 'Not present in V1').strip(),
-            'new_text': str(item.get('new_text') or 'Removed in V2').strip(),
-            'what_changed': str(item.get('what_changed') or 'Clause updated between versions.').strip(),
-            'why_it_matters': str(item.get('why_it_matters') or 'Shifts obligations, timelines, or terms between versions.').strip(),
+            'previous_text': str(item.get('previous_text') or 'Not present in File 1').strip(),
+            'new_text': str(item.get('new_text') or 'Removed in File 2').strip(),
+            'what_changed': str(item.get('what_changed') or 'Clause updated between File 1 and File 2.').strip(),
+            'why_it_matters': str(item.get('why_it_matters') or 'Shifts obligations, timelines, or terms between File 1 and File 2.').strip(),
             'action_required': str(item.get('action_required') or 'Review affected stakeholders and operational guidance.').strip(),
         })
 
@@ -411,26 +411,26 @@ def compare_or_chat(
         return {'type': 'chat', 'message': _pick_non_repeating_greeting(safe_history)}
 
     # Build user prompt for Bedrock
-    v1_label = docs[0].get('name', 'Document V1') if len(docs) >= 1 else 'Previous (V1)'
-    v2_label = docs[1].get('name', 'Document V2') if len(docs) >= 2 else 'New (V2)'
+    v1_label = docs[0].get('name', 'File 1') if len(docs) >= 1 else 'File 1'
+    v2_label = docs[1].get('name', 'File 2') if len(docs) >= 2 else 'File 2'
 
     if len(docs) >= 2:
         combined_user_text = (
-            f"User instruction: {clean_msg or 'Compare Document V1 and Document V2 and explain every meaningful change and its impact.'}\n\n"
-            f"=== DOCUMENT V1 ({v1_label}) ===\n{docs[0]['text'][:18000]}\n\n"
-            f"=== DOCUMENT V2 ({v2_label}) ===\n{docs[1]['text'][:18000]}"
+            f"User instruction: {clean_msg or 'Compare File 1 and File 2 and explain every meaningful change and its impact.'}\n\n"
+            f"=== FILE 1 ({v1_label}) ===\n{docs[0]['text'][:18000]}\n\n"
+            f"=== FILE 2 ({v2_label}) ===\n{docs[1]['text'][:18000]}"
         )
     elif len(docs) == 1:
         single_doc = docs[0]
         if not clean_msg:
             return {
                 'type': 'chat',
-                'message': f"Loaded {single_doc.get('name', 'Document V1')} as Baseline V1. Please attach Document V2 — or paste the updated text below — so I can detect every meaningful change and explain why it matters.",
+                'message': f"Loaded {single_doc.get('name', 'File 1')} as File 1. Please attach File 2 — or paste the second text below — so I can detect every meaningful change and explain why it matters.",
             }
-        # User supplied 1 document + text (either V2 pasted text to compare against V1 or a question about the document)
+        # User supplied 1 document + text (either File 2 pasted text to compare against File 1 or a question about the document)
         combined_user_text = (
-            f"User request or V2 text: {clean_msg}\n\n"
-            f"=== DOCUMENT V1 ({single_doc.get('name', 'document')}) ===\n{single_doc['text'][:24000]}"
+            f"User request or File 2 text: {clean_msg}\n\n"
+            f"=== FILE 1 ({single_doc.get('name', 'document')}) ===\n{single_doc['text'][:24000]}"
         )
     else:
         combined_user_text = clean_msg
@@ -463,7 +463,7 @@ def compare_or_chat(
         except Exception:
             pass
         # If model replied plain text on Mode 1 question
-        if len(docs) < 2 and not re.search(r'\b(?:previous|v1)\b.*\b(?:new|v2)\b', clean_msg, re.I | re.S):
+        if len(docs) < 2 and not re.search(r'\b(?:file\s*1|doc\s*1|previous|v1)\b.*\b(?:file\s*2|doc\s*2|new|v2)\b', clean_msg, re.I | re.S):
             return {'type': 'chat', 'message': raw_output.strip()[:2500]}
 
     # Deterministic fallback when Bedrock fails or returns malformed JSON on comparison input
@@ -471,9 +471,9 @@ def compare_or_chat(
         return _deterministic_fallback(docs[0]['text'], docs[1]['text'], v1_label, v2_label)
     inline_v1, inline_v2 = _detect_inline_v1_v2(clean_msg)
     if inline_v1 and inline_v2:
-        return _deterministic_fallback(inline_v1, inline_v2, 'Previous (V1)', 'New (V2)')
+        return _deterministic_fallback(inline_v1, inline_v2, 'File 1', 'File 2')
     return {
         'type': 'chat',
-        'message': "Please attach Document V1 and Document V2 (or paste 'Previous: ... New: ...' text) and I'll detect every meaningful change and explain why it matters.",
+        'message': "Please attach File 1 and File 2 (or paste 'File 1: ... File 2: ...' text) and I'll detect every meaningful change and explain why it matters.",
     }
 

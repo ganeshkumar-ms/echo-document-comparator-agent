@@ -50,11 +50,11 @@ export default function EchoResultCard({ data }) {
       <div className="echoTop">
         <div className="echoTitleWrap">
           <div className="echoPairLabel">
-            <span>{data.v1_label || 'Document V1'}</span>
+            <span>{data.file1_label || data.v1_label || 'File 1'}</span>
             <span className="pairArrow" aria-hidden="true">-&gt;</span>
-            <span>{data.v2_label || 'Document V2'}</span>
+            <span>{data.file2_label || data.v2_label || 'File 2'}</span>
           </div>
-          <h3 className="echoTitle">{data.comparison_title || 'Document Version Comparison'}</h3>
+          <h3 className="echoTitle">{data.comparison_title || 'Document Comparison'}</h3>
         </div>
         <span className={`impactBadge ${impactClass}`}>{impactLabel}</span>
       </div>
@@ -113,11 +113,11 @@ export default function EchoResultCard({ data }) {
 
                   <div className="diffPair">
                     <div className="diffBox diffPrev">
-                      <span className="diffTag">PREVIOUS (V1)</span>
+                      <span className="diffTag">FILE 1</span>
                       <p>{c.previous_text}</p>
                     </div>
                     <div className="diffBox diffNew">
-                      <span className="diffTag">NEW (V2)</span>
+                      <span className="diffTag">FILE 2</span>
                       <p>{c.new_text}</p>
                     </div>
                   </div>

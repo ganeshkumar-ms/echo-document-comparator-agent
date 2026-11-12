@@ -60,7 +60,7 @@ function getSmartPreview(messages) {
       lastAi.structured.impact_headline ||
       lastAi.structured.summary ||
       lastAi.structured.comparison_title ||
-      'Version comparison ready'
+      'Document comparison ready'
     )
   }
   if (lastAi?.content && !GREETING_RE.test(lastAi.content)) {
@@ -270,7 +270,7 @@ export default function App() {
     setIsLoading(true)
 
     const baseMessages = currentSession ? currentSession.messages : draftMessages
-    const priorV1Doc = [...baseMessages]
+    const priorFile1Doc = [...baseMessages]
       .reverse()
       .flatMap(m => m.docs || [])
       .find(d => d && (d.extractedText || d.s3Key))
@@ -279,7 +279,7 @@ export default function App() {
     const localDocMeta = files.map((f, idx) => ({
       name: f.name,
       size: formatSize(f.size),
-      versionLabel: files.length === 1 && priorV1Doc ? 'V2' : idx === 0 ? 'V1' : 'V2',
+      versionLabel: files.length === 1 && priorFile1Doc ? 'File 2' : idx === 0 ? 'File 1' : 'File 2',
       blobUrl: URL.createObjectURL(f),
     }))
 
@@ -323,28 +323,28 @@ export default function App() {
     try {
       const preparedDocs = await Promise.all(
         files.map((f, idx) =>
-          prepareAttachedDocument(f, files.length === 1 && priorV1Doc ? 'V2' : idx === 0 ? 'V1' : 'V2')
+          prepareAttachedDocument(f, files.length === 1 && priorFile1Doc ? 'File 2' : idx === 0 ? 'File 1' : 'File 2')
         )
       )
 
       let apiDocuments = preparedDocs
-      if (preparedDocs.length === 1 && priorV1Doc) {
+      if (preparedDocs.length === 1 && priorFile1Doc) {
         apiDocuments = [
           {
-            name: priorV1Doc.name,
-            version_label: 'V1',
-            extracted_text: priorV1Doc.extractedText,
-            s3_key: priorV1Doc.s3Key,
+            name: priorFile1Doc.name,
+            version_label: 'File 1',
+            extracted_text: priorFile1Doc.extractedText,
+            s3_key: priorFile1Doc.s3Key,
           },
           preparedDocs[0],
         ]
-      } else if (preparedDocs.length === 0 && priorV1Doc && text.length > 20) {
+      } else if (preparedDocs.length === 0 && priorFile1Doc && text.length > 20) {
         apiDocuments = [
           {
-            name: priorV1Doc.name,
-            version_label: 'V1',
-            extracted_text: priorV1Doc.extractedText,
-            s3_key: priorV1Doc.s3Key,
+            name: priorFile1Doc.name,
+            version_label: 'File 1',
+            extracted_text: priorFile1Doc.extractedText,
+            s3_key: priorFile1Doc.s3Key,
           },
         ]
       }
@@ -366,7 +366,7 @@ export default function App() {
       })
 
       const matchedViewerDocs =
-        preparedDocs.length === 1 && priorV1Doc && Array.isArray(res.viewer_documents) && res.viewer_documents.length > 1
+        preparedDocs.length === 1 && priorFile1Doc && Array.isArray(res.viewer_documents) && res.viewer_documents.length > 1
           ? [res.viewer_documents[res.viewer_documents.length - 1]]
           : res.viewer_documents
 
@@ -374,7 +374,7 @@ export default function App() {
         ? matchedViewerDocs.map((vd, idx) => ({
             name: vd.name,
             size: localDocMeta[idx]?.size || '',
-            versionLabel: vd.version_label || localDocMeta[idx]?.versionLabel || (idx === 0 ? 'V1' : 'V2'),
+            versionLabel: vd.version_label || localDocMeta[idx]?.versionLabel || (idx === 0 ? 'File 1' : 'File 2'),
             blobUrl: localDocMeta[idx]?.blobUrl,
             viewerHtml: vd.viewer_html,
             extractedText: vd.extracted_text,
@@ -457,7 +457,7 @@ export default function App() {
                 <span>Know the impact.</span>
               </h1>
               <p className="sub">
-                Upload Document V1 and Document V2 — or paste two versions below — to uncover changed deadlines, amounts, obligations, and why every difference matters.
+                Upload File 1 and File 2 — or paste two texts below — to uncover changed deadlines, amounts, obligations, and why every difference matters.
               </p>
 
               <div className="promptGlow">
@@ -482,8 +482,8 @@ export default function App() {
                   <button
                     className="startAttach"
                     type="button"
-                    aria-label="Attach V1 or V2 document"
-                    title="Attach V1 and V2 documents (up to 2)"
+                    aria-label="Attach File 1 or File 2"
+                    title="Attach File 1 and File 2 (up to 2)"
                     onClick={() => homeFileRef.current?.click()}
                   >
                     <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -493,7 +493,7 @@ export default function App() {
                   <input
                     value={homeInput}
                     onChange={e => setHomeInput(e.target.value)}
-                    placeholder="Ask ECHO or paste Previous (V1) & New (V2)..."
+                    placeholder="Ask ECHO or paste File 1 & File 2 text..."
                     aria-label="Start conversation"
                   />
                   <button className="send" type="submit" aria-label="Send">
@@ -509,7 +509,7 @@ export default function App() {
                 <div className="attachedRow">
                   {attachedFiles.map((f, idx) => (
                     <span key={`${f.name}-${idx}`} className="attachChip">
-                      <span className="attachVer">{idx === 0 ? 'V1' : 'V2'}</span>
+                      <span className="attachVer">{idx === 0 ? 'File 1' : 'File 2'}</span>
                       <span className="attachName">{f.name}</span>
                       <button
                         type="button"
@@ -527,7 +527,7 @@ export default function App() {
                       className="attachAddV2"
                       onClick={() => homeFileRef.current?.click()}
                     >
-                      + Attach V2
+                      + Attach File 2
                     </button>
                   )}
                 </div>
@@ -543,7 +543,7 @@ export default function App() {
                   <div className="emptyCard">
                     <div className="emptyTitle">No conversations yet</div>
                     <p className="emptyDesc">
-                      Attach Document V1 &amp; V2 above or compare two clauses inline to start your first semantic impact review.
+                      Attach File 1 &amp; File 2 above or compare two clauses inline to start your first semantic impact review.
                     </p>
                   </div>
                 ) : (
@@ -609,7 +609,7 @@ export default function App() {
                         {activeTitle}
                       </button>
                     )}
-                    <small>DOCUMENT COMPARATOR · V1 VS V2 IMPACT</small>
+                    <small>DOCUMENT COMPARATOR · FILE 1 VS FILE 2 IMPACT</small>
                   </div>
 
                   <div className="mobileActions">
@@ -647,9 +647,9 @@ export default function App() {
                 <div className="messages" ref={messagesRef} aria-live="polite">
                   {activeMessages.length === 0 && !isLoading && (
                     <div className="welcomeHint">
-                      <div className="welcomeTitle">Ready to Compare Versions</div>
+                      <div className="welcomeTitle">Ready to Compare Files</div>
                       <p>
-                        Attach <strong>Document V1</strong> and <strong>Document V2</strong> below (or paste <code>Previous: ... New: ...</code> text) to analyze what changed and why it matters.
+                        Attach <strong>File 1</strong> and <strong>File 2</strong> below (or paste <code>File 1: ... File 2: ...</code> text) to analyze what changed and why it matters.
                       </p>
                     </div>
                   )}
@@ -666,7 +666,7 @@ export default function App() {
                           <div className="userDocs">
                             {msg.docs.map((doc, dIdx) => (
                               <div key={`${doc.name}-${dIdx}`} className="docPill">
-                                <span className="docVerTag">{doc.versionLabel || `V${dIdx + 1}`}</span>
+                                <span className="docVerTag">{doc.versionLabel || `File ${dIdx + 1}`}</span>
                                 <span className="docPillName">{doc.name}</span>
                                 {doc.size && <span className="docPillSize">{doc.size}</span>}
                                 <button
@@ -714,7 +714,7 @@ export default function App() {
                     <div className="attachedRow composerAttached">
                       {attachedFiles.map((f, idx) => (
                         <span key={`${f.name}-${idx}`} className="attachChip">
-                          <span className="attachVer">{idx === 0 ? 'V1' : 'V2'}</span>
+                          <span className="attachVer">{idx === 0 ? 'File 1' : 'File 2'}</span>
                           <span className="attachName">{f.name}</span>
                           <button
                             type="button"
@@ -732,7 +732,7 @@ export default function App() {
                           className="attachAddV2"
                           onClick={() => chatFileRef.current?.click()}
                         >
-                          + Add V2
+                          + Add File 2
                         </button>
                       )}
                     </div>
@@ -759,8 +759,8 @@ export default function App() {
                       <button
                         className="plus"
                         type="button"
-                        aria-label="Attach V1 or V2 document"
-                        title="Attach V1 and V2 documents (up to 2)"
+                        aria-label="Attach File 1 or File 2"
+                        title="Attach File 1 and File 2 (up to 2)"
                         onClick={() => chatFileRef.current?.click()}
                       >
                         <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -773,8 +773,8 @@ export default function App() {
                         onChange={e => setChatInput(e.target.value)}
                         placeholder={
                           attachedFiles.length === 1
-                            ? 'Optional note — or click + Add V2 to compare...'
-                            : 'Ask ECHO or compare V1 & V2 versions...'
+                            ? 'Optional note — or click + Add File 2 to compare...'
+                            : 'Ask ECHO or compare File 1 & File 2...'
                         }
                         maxLength={4000}
                         autoComplete="off"

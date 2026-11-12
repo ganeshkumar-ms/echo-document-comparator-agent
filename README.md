@@ -2,7 +2,7 @@
 
 > See the change. Know the impact.
 
-Enterprise AI Document Comparator. Compares Baseline Document V1 and Updated Document V2 (files or pasted versions) to uncover semantic shifts in deadlines, amounts, obligations, affected stakeholders, and business impact.
+Enterprise AI Document Comparator. Compares File 1 and File 2 (uploaded documents or pasted texts) to uncover semantic shifts in deadlines, amounts, obligations, affected stakeholders, and business impact.
 
 ---
 
@@ -127,4 +127,4 @@ echo-document-comparator-agent/
 | `GET` | `/api/health` (or `/health`) | Health check |
 | `POST` | `/api/compare` | Primary workspace endpoint |
 | `POST` | `/api/get-upload-url` | Generate presigned S3 upload URL for large files |
-| `GET` | `/api/view-document` | Inspect uploaded V1/V2 document HTML preview |
+| `GET` | `/api/view-document` | Inspect uploaded File 1 / File 2 document HTML preview |

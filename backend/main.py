@@ -98,12 +98,12 @@ def _resolve_documents(req: CompareRequest) -> List[dict]:
             name=req.file_name or 'document.txt',
             content_base64=req.file_content_base64,
             s3_key=req.s3_key,
-            version_label='V1',
+            version_label='File 1',
         ))
 
     resolved = []
     for idx, doc in enumerate(items[:2]):
-        ver = doc.version_label or ('V1' if idx == 0 else 'V2')
+        ver = doc.version_label or ('File 1' if idx == 0 else 'File 2')
         text = ''
         if doc.extracted_text:
             text = str(doc.extracted_text)[:45000]
