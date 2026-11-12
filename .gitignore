@@ -1,0 +1,24 @@
+# Environments (keep .env.example and .env.production)
+.env
+**/.env
+**/.env.local
+!.env.example
+!.env.production
+
+# Python
+**/venv/
+**/.venv/
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Node / Vite
+**/node_modules/
+**/dist/
+
+# Runtime uploads & IDE
+backend/uploads/*
+.vscode/
+.DS_Store
+Thumbs.db
+
