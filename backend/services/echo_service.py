@@ -128,9 +128,9 @@ GREETING_REGEX = re.compile(
 )
 
 GREETING_RESPONSES = [
-    "Hi there! Upload File 1 and File 2 — or paste two texts side by side — and I'll pinpoint every meaningful change and explain why it matters.",
+    "Hi there! Upload File 1 and File 2 (PDF, Word, Excel, CSV, JSON, XML, or TXT) — or paste clauses side by side — and I'll pinpoint every meaningful change and explain why it matters.",
     "Hello! Ready to compare two policy drafts, contracts, SOPs, or customer notices for deadline, fee, amount, and requirement shifts.",
-    "Hey! Attach your File 1 and File 2 documents (or paste both texts inline), and I'll break down what changed, who is impacted, and what to do next.",
+    "Hey! Attach your File 1 and File 2 documents (or paste two clauses inline), and I'll break down what changed, who is impacted, and what to do next.",
     "Welcome to ECHO! Drop in File 1 and File 2 anytime to see added, removed, or modified terms along with their real-world impact.",
 ]
 
@@ -425,7 +425,7 @@ def compare_or_chat(
         if not clean_msg:
             return {
                 'type': 'chat',
-                'message': f"Loaded {single_doc.get('name', 'File 1')} as File 1. Please attach File 2 — or paste the second text below — so I can detect every meaningful change and explain why it matters.",
+                'message': f"Loaded {single_doc.get('name', 'File 1')} as File 1. Please attach File 2 — or paste clauses below — so I can detect every meaningful change and explain why it matters.",
             }
         # User supplied 1 document + text (either File 2 pasted text to compare against File 1 or a question about the document)
         combined_user_text = (
@@ -474,6 +474,6 @@ def compare_or_chat(
         return _deterministic_fallback(inline_v1, inline_v2, 'File 1', 'File 2')
     return {
         'type': 'chat',
-        'message': "Please attach File 1 and File 2 (or paste 'File 1: ... File 2: ...' text) and I'll detect every meaningful change and explain why it matters.",
+        'message': "Please attach File 1 and File 2 (PDF, Word, Excel, CSV, JSON, XML, TXT) or paste 'File 1: ... File 2: ...' and I'll detect every meaningful change and explain why it matters.",
     }
 

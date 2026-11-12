@@ -457,7 +457,7 @@ export default function App() {
                 <span>Know the impact.</span>
               </h1>
               <p className="sub">
-                Upload File 1 and File 2 — or paste two texts below — to uncover changed deadlines, amounts, obligations, and why every difference matters.
+                Upload File 1 and File 2 (PDF, Word, Excel, CSV, JSON, XML, TXT) — or paste clauses below — to uncover changed deadlines, amounts, obligations, and why every difference matters.
               </p>
 
               <div className="promptGlow">
@@ -493,7 +493,7 @@ export default function App() {
                   <input
                     value={homeInput}
                     onChange={e => setHomeInput(e.target.value)}
-                    placeholder="Ask ECHO or paste File 1 & File 2 text..."
+                    placeholder="Ask ECHO or compare File 1 & File 2..."
                     aria-label="Start conversation"
                   />
                   <button className="send" type="submit" aria-label="Send">
@@ -649,7 +649,7 @@ export default function App() {
                     <div className="welcomeHint">
                       <div className="welcomeTitle">Ready to Compare Files</div>
                       <p>
-                        Attach <strong>File 1</strong> and <strong>File 2</strong> below (or paste <code>File 1: ... File 2: ...</code> text) to analyze what changed and why it matters.
+                        Attach <strong>File 1</strong> and <strong>File 2</strong> below (PDF, Word, Excel, CSV, JSON, XML, TXT) or paste clauses like <code>File 1: ... File 2: ...</code> to analyze what changed and why it matters.
                       </p>
                     </div>
                   )}

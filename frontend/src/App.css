@@ -1614,3 +1614,337 @@ header {
   }
 }
 
+/* ===== Universal Mobile & Tablet Responsive Polish (TAXORA Standard) ===== */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.app {
+  min-height: 100dvh;
+  max-width: 100vw;
+  overflow-x: clip;
+}
+
+.bubble,
+.bubble p,
+.bubble li,
+.bubble td,
+.bubble th,
+.bubble code,
+.echoSummary,
+.impactHeadline,
+.meaningVal {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.bubble pre,
+.bubble table {
+  max-width: 100%;
+  overflow-x: auto;
+  display: block;
+}
+
+@media (max-width: 1023px) and (min-width: 601px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  .cards .card:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 1024px) and (min-width: 761px) {
+  .layout.withViewer {
+    grid-template-columns: minmax(0, 1.15fr) minmax(290px, 1fr) !important;
+  }
+  .layout.withViewer .side {
+    display: flex !important;
+    position: fixed !important;
+    z-index: 80 !important;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: min(80vw, 300px) !important;
+    height: 100dvh !important;
+    transform: translateX(-104%) !important;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: 20px 0 60px rgba(0, 0, 0, 0.72) !important;
+  }
+  .layout.withViewer .side.open {
+    transform: translateX(0) !important;
+  }
+  .layout.withViewer .docViewer {
+    position: relative !important;
+    inset: auto !important;
+    width: auto !important;
+    height: 100% !important;
+    z-index: auto !important;
+  }
+  .layout.withViewer .mobileMenu,
+  .layout.withViewer .mobileOnlyBtn {
+    display: inline-flex !important;
+  }
+  .layout.withViewer .scrim {
+    display: block;
+  }
+  .layout.withViewer .drawerClose {
+    display: grid !important;
+    position: absolute;
+    right: 16px;
+    top: 18px;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    border-radius: 11px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    cursor: pointer;
+  }
+}
+
+@media (max-width: 760px) {
+  html, body {
+    min-height: 100dvh;
+  }
+  #home,
+  .homePage {
+    min-height: 100dvh !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  #home header,
+  .homePage header {
+    height: 58px !important;
+    padding: 0 14px !important;
+    gap: 10px;
+  }
+  .word {
+    font-size: 17px !important;
+    letter-spacing: 5px !important;
+    white-space: nowrap;
+  }
+  .enter {
+    font-size: 11.5px !important;
+    padding: 8px 12px !important;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .home,
+  #home .home,
+  .homePage .home {
+    flex: 1 !important;
+    padding: 20px 14px calc(22px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .home h1,
+  #home h1,
+  .homePage h1 {
+    font-size: clamp(30px, 8.8vw, 44px) !important;
+    line-height: 1.08 !important;
+    letter-spacing: -1px !important;
+  }
+  .sub,
+  #home .sub,
+  .homePage .sub {
+    font-size: 14.5px !important;
+    line-height: 1.55 !important;
+    margin: 12px auto 20px !important;
+    max-width: 100% !important;
+  }
+  .promptGlow,
+  .prompt,
+  .composer {
+    max-width: 100% !important;
+  }
+  .prompt {
+    padding: 7px !important;
+    gap: 6px !important;
+    border-radius: 18px !important;
+  }
+  .prompt input,
+  .composer input,
+  input {
+    font-size: 16px !important;
+    min-width: 0;
+  }
+  .cards {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  .card {
+    min-height: 0 !important;
+    padding: 13px 15px !important;
+  }
+  .layout {
+    grid-template-columns: 1fr !important;
+  }
+  .side {
+    display: flex !important;
+    position: fixed !important;
+    z-index: 80 !important;
+    inset: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100dvh !important;
+    padding: 18px 16px 20px !important;
+    transform: translateX(-104%) !important;
+    transition: transform 0.36s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    overflow-y: auto !important;
+    box-shadow: none !important;
+  }
+  .side.open {
+    transform: translateX(0) !important;
+  }
+  .chatHead {
+    height: 56px !important;
+    padding: 0 12px !important;
+    gap: 8px !important;
+  }
+  .chatHead > div:first-child,
+  .chatHead .headLeft,
+  .chatHead .chatHeadLeft {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+    overflow: hidden !important;
+  }
+  .chatHead b,
+  .chatHead .titleEditable {
+    display: block !important;
+    max-width: 100% !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-size: 13px !important;
+  }
+  .chatHead small {
+    display: block !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-size: 10px !important;
+  }
+  .titleInput {
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: 16px !important;
+  }
+  .mobileActions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+  }
+  .mobileMenu,
+  .ghost {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+  }
+  .messages {
+    padding: 14px 12px !important;
+    gap: 12px !important;
+  }
+  .bubble {
+    max-width: 96% !important;
+    min-width: 0 !important;
+    padding: 12px 14px !important;
+    font-size: 15.5px !important;
+    line-height: 1.55 !important;
+  }
+  .composerArea {
+    padding: 8px 12px calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .fine {
+    display: none !important;
+  }
+  .attachChip,
+  .docPill,
+  .userFileCard {
+    max-width: 100% !important;
+  }
+  .attachName,
+  .docPillName {
+    max-width: 55vw;
+  }
+  .docPill {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .layout.withViewer {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100dvh !important;
+    grid-template-columns: none !important;
+  }
+  .layout.withViewer .chat {
+    height: 52% !important;
+    min-height: 210px !important;
+    flex: 1 1 52% !important;
+    min-width: 0 !important;
+  }
+  .layout.withViewer .docViewer {
+    height: 48% !important;
+    min-height: 200px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 48% !important;
+    position: relative !important;
+    inset: auto !important;
+    z-index: 10 !important;
+    border-left: 0 !important;
+    border-top: 1.5px solid var(--line) !important;
+    box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.45) !important;
+  }
+  .layout.withViewer .docViewerHead,
+  .layout.withViewer .docHead {
+    height: 48px !important;
+    padding: 0 12px !important;
+  }
+  .layout.withViewer .messages {
+    padding: 12px 10px 24px !important;
+    gap: 10px !important;
+  }
+  .layout.withViewer .composerArea {
+    padding: 6px 10px calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .impact-columns,
+  .lensDualGrid,
+  .twoColGrid,
+  .keyInfoGrid,
+  .intentGrid,
+  .bridgeMapRoute,
+  .diffPair,
+  .echoFooterGrid,
+  .meaningRow,
+  .fixPair,
+  .coachRow {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .figuresGrid,
+  .metricsGrid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 420px) {
+  #home header,
+  .homePage header {
+    height: 54px !important;
+    padding: 0 12px !important;
+  }
+  .word {
+    font-size: 16px !important;
+    letter-spacing: 4px !important;
+  }
+  .enter {
+    font-size: 11px !important;
+    padding: 7px 10px !important;
+  }
+}
