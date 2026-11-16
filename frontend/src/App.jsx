@@ -359,11 +359,14 @@ export default function App() {
               : m.content || '',
       }))
 
-      const res = await sendEchoCompare({
-        message: text,
-        history: historyPayload,
-        documents: apiDocuments,
-      })
+      const [res] = await Promise.all([
+        sendEchoCompare({
+          message: text,
+          history: historyPayload,
+          documents: apiDocuments,
+        }),
+        new Promise(res => setTimeout(res, 900))
+      ])
 
       const matchedViewerDocs =
         preparedDocs.length === 1 && priorFile1Doc && Array.isArray(res.viewer_documents) && res.viewer_documents.length > 1
@@ -684,7 +687,7 @@ export default function App() {
                         {msg.role === 'user' ? (
                           msg.content && <div className="userText">{msg.content}</div>
                         ) : msg.structured ? (
-                          <EchoResultCard data={msg.structured} />
+                          <EchoResultCard data={msg.structured} guardrails={msg.structured?.guardrails || msg.guardrails} />
                         ) : (
                           <div className="chatProse">
                             {String(msg.content || '')

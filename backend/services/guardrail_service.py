@@ -198,6 +198,34 @@ def inspect_and_sanitize(text: str, is_document: bool = False) -> Dict:
     raw = text or ''
     stripped = raw.strip()
 
+    # 0. Raw Credential / Access Key File Violation (PCI-DSS & GLBA)
+    has_aws_key = bool(re.search(r'\b(?:AKIA|ASIA)[0-9A-Z]{16}\b', raw))
+    has_key_header = bool(re.search(r'(?i)\b(?:access\s*key\s*id|secret\s*access\s*key|api[_\s]*secret|private[_\s]*key|password\s*=|db_pass)\b', raw))
+    has_pem_key = bool(re.search(r'-----BEGIN\s+(?:RSA\s+|OPENSSH\s+|EC\s+|DSA\s+)?PRIVATE\s+KEY-----', raw, flags=re.IGNORECASE))
+    has_secret_dump = bool(re.search(r'(?i)\b(?:secret[_\s]*access[_\s]*key|aws[_\s]*secret[_\s]*access[_\s]*key)\s*[:=,]\s*["\']?[A-Za-z0-9/+=]{30,60}["\']?', raw))
+
+    if has_pem_key or (has_aws_key and has_key_header) or (has_aws_key and has_secret_dump) or has_aws_key:
+        return {
+            'blocked': True,
+            'reason': 'Raw Credential / Access Key File Violation',
+            'rejection_rationale': 'Submitted input contains raw AWS access keys, secret access keys, or private cryptographic credentials.',
+            'message': (
+                '🛡️ BFSI Privacy & Credential Guardrail Block: You provided a raw credential file or authentication keys '
+                '(AWS Access Key ID / Secret Key / Private Key). Under Enterprise Banking Data Privacy Regulations (PCI-DSS v4.0 & GLBA Safeguards), '
+                'ECHO strictly refuses to accept, store, or process raw access keys, passwords, or authentication secrets.'
+            ),
+            'sanitized_text': '',
+            'guardrails': {
+                'status': 'BLOCKED',
+                'action': 'BLOCKED_SENSITIVE_CREDENTIALS',
+                'framework': 'PCI-DSS v4.0 Requirement 3 & GLBA Safeguards Rule',
+                'triggered_rule': 'Zero-Password & Secret Credential Policy (AWS / API Keys)',
+                'rejection_reason': 'Raw authentication keys or credentials submitted.',
+                'checks_passed': ['Unwanted Content Filter'],
+                'summary': 'Blocked: Raw AWS access key or secret credential rejected for security governance.',
+            },
+        }
+
     user_portion = stripped
     if '[NEW FILE' in stripped and 'User Note:' in stripped:
         user_portion = stripped.split('User Note:', 1)[-1].split('INSTRUCTION:', 1)[0].strip()

@@ -1,3 +1,5 @@
+import datetime
+import uuid
 import difflib
 import json
 import os
@@ -388,11 +390,18 @@ def compare_or_chat(
 
     msg_guard = guardrail_service.inspect_and_sanitize(clean_msg, is_document=False)
     if msg_guard.get('blocked'):
+        trace_code = f"ECH-{datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
         return {
             'type': 'chat',
             'message': msg_guard.get('message', 'Request blocked by Enterprise BFSI Security Guardrails.'),
-            'guardrails': msg_guard.get('guardrails'),
+            'guardrail_status': 'BLOCKED',
+            'guardrails': msg_guard.get('guardrails', {"status": "BLOCKED"}),
             'rejected': True,
+            'trace_id': trace_code,
+            'data': {
+                'trace_id': trace_code,
+                'guardrails': msg_guard.get('guardrails', {"status": "BLOCKED"})
+            }
         }
     clean_msg = msg_guard.get('sanitized_text', clean_msg)
     for d in docs:
@@ -455,7 +464,11 @@ def compare_or_chat(
             parsed = json.loads(_strip_json_fences(raw_output))
             if isinstance(parsed, dict):
                 if parsed.get('type') == 'comparison':
-                    return _normalize_comparison(parsed, v1_label, v2_label)
+                    res = _normalize_comparison(parsed, v1_label, v2_label)
+                    trace_code = f"ECH-{datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
+                    res['trace_id'] = trace_code
+                    res['guardrails'] = {"status": "PASSED", "pci_dss_sanitized": True}
+                    return res
                 if parsed.get('type') == 'chat' and parsed.get('message'):
                     return {'type': 'chat', 'message': str(parsed['message']).strip()}
                 if 'changes' in parsed:

@@ -155,6 +155,22 @@ def validate_file_pre_extract(
     size_bytes = total_size_override if total_size_override is not None else len(data)
     detected_type = ext or 'unknown extension'
 
+    # 1b. Raw Credential & Access Key File Guardrail (PCI-DSS & GLBA)
+    is_cred_name = bool(re.search(r'(?i)\b(?:access[_\-]?keys?|credentials?|\.env|id_rsa|private[_\-]?key)\b', fname))
+    has_raw_key = bool(re.search(rb'\b(?:AKIA|ASIA)[0-9A-Z]{16}\b', data[:8192]))
+    if is_cred_name or has_raw_key:
+        return _build_rejection(
+            reason_code='SENSITIVE_CREDENTIALS_FILE',
+            title='Authentication Credentials / Access Keys Rejected',
+            filename=fname,
+            detected_type=detected_type,
+            size_bytes=size_bytes,
+            why=f"ECHO strictly refuses to accept, store, or process raw cloud infrastructure access keys, secret keys, or authentication credential files ('{fname}').",
+            technical_detail='Raw AWS access keys or credential file markers detected in file payload.',
+            how_to_fix='Remove access keys and authentication secrets before uploading documents.',
+            policy=pol,
+        )
+
     # 1. Empty (0 bytes)
     if size_bytes == 0 or len(data) == 0:
         return _build_rejection(
