@@ -1,3 +1,14 @@
+/* Hide scrollbars while preserving scrolling */
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
 @property --angle {
   syntax: '<angle>';
   initial-value: 0deg;
@@ -5,14 +16,23 @@
 }
 
 :root {
-  --bg: #170202;
-  --panel: #290707;
-  --line: rgba(255, 36, 36, 0.22);
-  --text: #f7f7fb;
-  --muted: #c99e9e;
-  --a1: #ff2424;
-  --a1-bright: #ff7b7b;
-  --a2: #640707;
+  --bg: #020c16;
+  --panel: #051a2c;
+  --panel-strong: #0a253e;
+  --panel-elevated: #0a253e;
+  --panel-alt: #081e33;
+  --line: rgba(7, 140, 255, 0.18);
+  --line-strong: rgba(7, 140, 255, 0.4);
+  --text: #f0f7ff;
+  --muted: #849bb4;
+  --a1: #078cff;
+  --a1-bright: #38bdf8;
+  --a2: #0a3154;
+  --cyan: #38bdf8;
+  --success: #34d399;
+  --card-bg: rgba(5, 26, 44, 0.85);
+  --v: #078cff;
+  --c: #38bdf8;
 }
 
 * {
@@ -55,7 +75,7 @@ button, input {
   overflow: hidden;
   position: relative;
   background:
-    radial-gradient(circle at 50% -10%, rgba(255, 36, 36, 0.22), transparent 36%),
+    radial-gradient(circle at 50% -10%, rgba(7, 140, 255, 0.22), transparent 36%),
     radial-gradient(circle at 95% 90%, rgba(100, 7, 7, 0.26), transparent 32%),
     var(--bg);
 }
@@ -65,7 +85,7 @@ button, input {
   inset: -30%;
   pointer-events: none;
   background:
-    radial-gradient(circle at 24% 25%, rgba(255, 36, 36, 0.27), transparent 23%),
+    radial-gradient(circle at 24% 25%, rgba(7, 140, 255, 0.27), transparent 23%),
     radial-gradient(circle at 78% 70%, rgba(100, 7, 7, 0.22), transparent 25%);
   filter: none;
   animation: drift 16s ease-in-out infinite alternate;
@@ -85,12 +105,12 @@ button, input {
   position: fixed;
   width: 590px;
   height: 590px;
-  border: 1px solid rgba(255, 36, 36, 0.72);
+  border: 1px solid rgba(7, 140, 255, 0.72);
   border-radius: 50%;
   left: 50%;
   top: 53%;
   transform: translate(-50%, -50%);
-  box-shadow: 0 0 0 65px rgba(255, 36, 36, 0.045), 0 0 0 130px rgba(255, 36, 36, 0.025);
+  box-shadow: 0 0 0 65px rgba(7, 140, 255, 0.045), 0 0 0 130px rgba(7, 140, 255, 0.025);
   opacity: 0.16;
   animation: themePattern 4s ease-in-out infinite;
   pointer-events: none;
@@ -150,8 +170,8 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(255, 36, 36, 0.14);
-  background: rgba(255, 36, 36, 0.03);
+  border-bottom: 1px solid rgba(7, 140, 255, 0.14);
+  background: rgba(7, 140, 255, 0.03);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   position: sticky;
@@ -191,8 +211,8 @@ header {
 .enter:hover, .ghost:hover {
   transform: translateY(-1px);
   color: #ffffff;
-  border-color: rgba(255, 36, 36, 0.65);
-  box-shadow: 0 8px 26px rgba(255, 36, 36, 0.22);
+  border-color: rgba(7, 140, 255, 0.65);
+  box-shadow: 0 8px 26px rgba(7, 140, 255, 0.22);
 }
 
 .home {
@@ -260,7 +280,7 @@ header {
   display: flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid rgba(255, 36, 36, 0.34);
+  border: 1px solid rgba(7, 140, 255, 0.34);
   border-radius: 22px;
   background: var(--panel);
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.72);
@@ -293,9 +313,9 @@ header {
   width: 44px;
   height: 44px;
   flex: 0 0 44px;
-  border: 1px solid rgba(255, 36, 36, 0.28);
+  border: 1px solid rgba(7, 140, 255, 0.28);
   border-radius: 14px;
-  background: rgba(255, 36, 36, 0.12);
+  background: rgba(7, 140, 255, 0.12);
   color: #ffc2c2;
   cursor: pointer;
   display: grid;
@@ -305,8 +325,8 @@ header {
 
 .startAttach:hover, .plus:hover {
   color: #ffffff;
-  border-color: rgba(255, 36, 36, 0.72);
-  background: rgba(255, 36, 36, 0.25);
+  border-color: rgba(7, 140, 255, 0.72);
+  background: rgba(7, 140, 255, 0.25);
 }
 
 .send, .chatSend {
@@ -321,12 +341,12 @@ header {
   display: grid;
   place-items: center;
   transition: all 0.2s ease;
-  box-shadow: 0 8px 26px rgba(255, 36, 36, 0.34);
+  box-shadow: 0 8px 26px rgba(7, 140, 255, 0.34);
 }
 
 .send:hover, .chatSend:hover {
   transform: translateY(-1px) scale(1.03);
-  box-shadow: 0 10px 30px rgba(255, 36, 36, 0.48);
+  box-shadow: 0 10px 30px rgba(7, 140, 255, 0.48);
 }
 
 .chatSend:disabled {
@@ -359,7 +379,7 @@ header {
 .composerAttached {
   max-width: 780px;
   margin: 0 auto 10px;
-  justify-content: flex-start;
+  justify-content: center;
 }
 
 .attachChip {
@@ -369,7 +389,7 @@ header {
   padding: 6px 10px;
   border-radius: 999px;
   background: rgba(41, 7, 7, 0.92);
-  border: 1px solid rgba(255, 36, 36, 0.42);
+  border: 1px solid rgba(7, 140, 255, 0.42);
   font-size: 13px;
   color: #ffffff;
 }
@@ -379,7 +399,7 @@ header {
   border-radius: 999px;
   font-size: 11px;
   font-weight: 700;
-  background: rgba(255, 36, 36, 0.25);
+  background: rgba(7, 140, 255, 0.25);
   color: #ff9c9c;
 }
 
@@ -406,7 +426,7 @@ header {
 
 .attachAddV2 {
   border: 1px dashed rgba(255, 123, 123, 0.55);
-  background: rgba(255, 36, 36, 0.10);
+  background: rgba(7, 140, 255, 0.10);
   color: #ffd0d0;
   border-radius: 999px;
   padding: 6px 12px;
@@ -417,7 +437,7 @@ header {
 }
 
 .attachAddV2:hover {
-  background: rgba(255, 36, 36, 0.22);
+  background: rgba(7, 140, 255, 0.22);
   color: #ffffff;
 }
 
@@ -473,7 +493,7 @@ header {
 
 .card:hover {
   transform: translateY(-3px);
-  border-color: rgba(255, 36, 36, 0.58);
+  border-color: rgba(7, 140, 255, 0.58);
   box-shadow: 0 16px 38px rgba(0, 0, 0, 0.45);
 }
 
@@ -547,7 +567,7 @@ header {
 
 /* Translucent Crimson Sidebar matching ECHO surface */
 .side {
-  border-right: 1px solid rgba(255, 36, 36, 0.24);
+  border-right: 1px solid rgba(7, 140, 255, 0.24);
   background: linear-gradient(180deg, rgba(64, 12, 12, 0.72) 0%, rgba(44, 7, 7, 0.78) 100%);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
@@ -565,8 +585,8 @@ header {
 }
 
 .new {
-  border: 1px solid rgba(255, 36, 36, 0.45);
-  background: rgba(255, 36, 36, 0.13);
+  border: 1px solid rgba(7, 140, 255, 0.45);
+  background: rgba(7, 140, 255, 0.13);
   color: #ffd2d2;
   border-radius: 12px;
   height: 38px;
@@ -586,7 +606,7 @@ header {
 }
 
 .new:hover {
-  background: rgba(255, 36, 36, 0.26);
+  background: rgba(7, 140, 255, 0.26);
   border-color: var(--a1);
   color: #ffffff;
 }
@@ -636,11 +656,11 @@ header {
 }
 
 .histRow:hover {
-  background: rgba(255, 36, 36, 0.13);
+  background: rgba(7, 140, 255, 0.13);
 }
 
 .histRow.on {
-  background: rgba(255, 36, 36, 0.20);
+  background: rgba(7, 140, 255, 0.20);
   box-shadow: inset 0 0 0 1px rgba(255, 123, 123, 0.34);
 }
 
@@ -729,8 +749,8 @@ header {
 }
 
 .histIcon.del:hover {
-  background: rgba(255, 36, 36, 0.34);
-  border-color: rgba(255, 36, 36, 0.78);
+  background: rgba(7, 140, 255, 0.34);
+  border-color: rgba(7, 140, 255, 0.78);
   color: #ffffff;
 }
 
@@ -750,8 +770,8 @@ header {
   padding: 8px 10px;
   justify-content: space-between;
   gap: 8px;
-  background: rgba(255, 36, 36, 0.16);
-  border: 1px solid rgba(255, 36, 36, 0.45);
+  background: rgba(7, 140, 255, 0.16);
+  border: 1px solid rgba(7, 140, 255, 0.45);
 }
 
 .confirmLabel {
@@ -786,7 +806,7 @@ header {
 
 .foot {
   margin-top: auto;
-  border-top: 1px solid rgba(255, 36, 36, 0.16);
+  border-top: 1px solid rgba(7, 140, 255, 0.16);
   padding: 14px 8px 2px;
   color: #9e7373;
   font-size: 11px;
@@ -812,7 +832,7 @@ header {
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--line);
-  background: rgba(255, 36, 36, 0.03);
+  background: rgba(7, 140, 255, 0.03);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
 }
@@ -842,7 +862,7 @@ header {
 }
 
 .titleEditable:hover {
-  background: rgba(255, 36, 36, 0.15);
+  background: rgba(7, 140, 255, 0.15);
 }
 
 .titleInput {
@@ -914,7 +934,7 @@ header {
 .welcomeHint code {
   padding: 2px 6px;
   border-radius: 6px;
-  background: rgba(255, 36, 36, 0.18);
+  background: rgba(7, 140, 255, 0.18);
   color: #ffd0d0;
   font-size: 13px;
 }
@@ -971,7 +991,7 @@ header {
   border-radius: 6px;
   font-size: 11px;
   font-weight: 700;
-  background: rgba(255, 36, 36, 0.38);
+  background: rgba(7, 140, 255, 0.38);
   color: #ffffff;
 }
 
@@ -1071,8 +1091,8 @@ header {
 }
 
 .composer:focus-within {
-  border-color: rgba(255, 36, 36, 0.62);
-  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.65), 0 0 24px rgba(255, 36, 36, 0.16);
+  border-color: rgba(7, 140, 255, 0.62);
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.65), 0 0 24px rgba(7, 140, 255, 0.16);
 }
 
 .composer form {
@@ -1136,7 +1156,7 @@ header {
 }
 
 .impactHigh {
-  background: rgba(255, 36, 36, 0.26);
+  background: rgba(7, 140, 255, 0.26);
   border: 1px solid rgba(255, 76, 76, 0.72);
   color: #ffb4b4;
 }
@@ -1169,7 +1189,7 @@ header {
   padding: 6px 12px;
   border-radius: 10px;
   background: rgba(0, 0, 0, 0.28);
-  border: 1px solid rgba(255, 36, 36, 0.20);
+  border: 1px solid rgba(7, 140, 255, 0.20);
   font-size: 13px;
   color: #f1dada;
 }
@@ -1206,7 +1226,7 @@ header {
 .impactHeadline {
   padding: 10px 14px;
   border-radius: 10px;
-  background: rgba(255, 36, 36, 0.12);
+  background: rgba(7, 140, 255, 0.12);
   border-left: 3px solid var(--a1);
   color: #ffffff;
   font-size: 14.5px;
@@ -1243,7 +1263,7 @@ header {
   padding: 14px;
   border-radius: 13px;
   background: rgba(19, 2, 2, 0.64);
-  border: 1px solid rgba(255, 36, 36, 0.22);
+  border: 1px solid rgba(7, 140, 255, 0.22);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1282,7 +1302,7 @@ header {
   color: #f3dada;
 }
 
-.sevHigh { background: rgba(255, 36, 36, 0.25); color: #ffb3b3; border: 1px solid rgba(255, 36, 36, 0.55); }
+.sevHigh { background: rgba(7, 140, 255, 0.25); color: #ffb3b3; border: 1px solid rgba(7, 140, 255, 0.55); }
 .sevMed  { background: rgba(245, 158, 11, 0.18); color: #fde68a; border: 1px solid rgba(245, 158, 11, 0.42); }
 .sevLow  { background: rgba(96, 165, 250, 0.16); color: #bfdbfe; border: 1px solid rgba(96, 165, 250, 0.42); }
 
@@ -1311,8 +1331,8 @@ header {
 }
 
 .diffPrev {
-  background: rgba(255, 36, 36, 0.08);
-  border: 1px solid rgba(255, 36, 36, 0.28);
+  background: rgba(7, 140, 255, 0.08);
+  border: 1px solid rgba(7, 140, 255, 0.28);
 }
 
 .diffPrev .diffTag {
@@ -1374,8 +1394,8 @@ header {
   border-radius: 999px;
   font-size: 13px;
   font-weight: 600;
-  background: rgba(255, 36, 36, 0.14);
-  border: 1px solid rgba(255, 36, 36, 0.34);
+  background: rgba(7, 140, 255, 0.14);
+  border: 1px solid rgba(7, 140, 255, 0.34);
   color: #ffd7d7;
 }
 
@@ -1425,9 +1445,9 @@ header {
   font-weight: 700;
   padding: 3px 9px;
   border-radius: 999px;
-  background: rgba(255, 36, 36, 0.22);
+  background: rgba(7, 140, 255, 0.22);
   color: #ff9c9c;
-  border: 1px solid rgba(255, 36, 36, 0.42);
+  border: 1px solid rgba(7, 140, 255, 0.42);
 }
 
 .docName {
@@ -1454,12 +1474,12 @@ header {
   display: flex;
   gap: 6px;
   padding: 10px 16px;
-  border-bottom: 1px solid rgba(255, 36, 36, 0.14);
-  background: rgba(255, 36, 36, 0.06);
+  border-bottom: 1px solid rgba(7, 140, 255, 0.14);
+  background: rgba(7, 140, 255, 0.06);
 }
 
 .docTab {
-  border: 1px solid rgba(255, 36, 36, 0.25);
+  border: 1px solid rgba(7, 140, 255, 0.25);
   background: transparent;
   color: #e4bebe;
   border-radius: 8px;
@@ -1474,7 +1494,7 @@ header {
 }
 
 .docTab.active {
-  background: rgba(255, 36, 36, 0.26);
+  background: rgba(7, 140, 255, 0.26);
   border-color: var(--a1);
   color: #ffffff;
 }
@@ -1592,7 +1612,7 @@ header {
     height: 40px;
     border: 1px solid var(--line);
     border-radius: 12px;
-    background: rgba(255, 36, 36, 0.12);
+    background: rgba(7, 140, 255, 0.12);
     color: #ffffff;
     cursor: pointer;
   }
