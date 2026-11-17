@@ -3491,9 +3491,9 @@ html, body {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  gap: 10px !important;
+  gap: 12px !important;
   width: 100% !important;
-  flex-wrap: wrap !important;
+  flex-wrap: nowrap !important;
   margin-bottom: 8px !important;
 }
 
@@ -3552,7 +3552,8 @@ html, body {
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
-  max-width: 60% !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
   text-align: right !important;
   margin-left: auto !important;
 }

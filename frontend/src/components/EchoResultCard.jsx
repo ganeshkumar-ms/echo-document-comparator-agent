@@ -710,9 +710,7 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
                     <div className="diffComparisonGrid">
                       <div className="diffSidePanel diffBeforePanel">
                         <div className="diffPanelHeader">
-                          <div className="diffBadgeWrap">
-                            <span className="diffTagBefore">{selectedLeftDoc.version_label || 'DOCUMENT 1'}</span>
-                          </div>
+                          <span className="diffTagBefore">{selectedLeftDoc.version_label || 'DOCUMENT 1'}</span>
                           <span className="diffDocLabel" title={selectedLeftDoc.name}>
                             {selectedLeftDoc.name || 'Document 1'}
                           </span>
@@ -721,16 +719,14 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
                           {hasPrev ? (
                             <p className="diffText beforeText">{cleanExcerpt(c.previous_text)}</p>
                           ) : (
-                            <p className="diffTextEmpty">[Not present in {selectedLeftDoc.version_label || 'Document 1'}]</p>
+                            <p className="diffTextEmpty">[Not present in {selectedLeftDoc.version_label || selectedLeftDoc.name || 'Document 1'}]</p>
                           )}
                         </div>
                       </div>
 
                       <div className="diffSidePanel diffAfterPanel">
                         <div className="diffPanelHeader">
-                          <div className="diffBadgeWrap">
-                            <span className="diffTagAfter">{selectedRightDoc.version_label || 'DOCUMENT 2'}</span>
-                          </div>
+                          <span className="diffTagAfter">{selectedRightDoc.version_label || 'DOCUMENT 2'}</span>
                           <span className="diffDocLabel" title={selectedRightDoc.name}>
                             {selectedRightDoc.name || 'Document 2'}
                           </span>
@@ -739,7 +735,7 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
                           {hasNew ? (
                             <p className="diffText afterText">{cleanExcerpt(c.new_text)}</p>
                           ) : (
-                            <p className="diffTextEmpty removed">[Not present in {selectedRightDoc.version_label || 'Document 2'}]</p>
+                            <p className="diffTextEmpty removed">[Not present in {selectedRightDoc.version_label || selectedRightDoc.name || 'Document 2'}]</p>
                           )}
                         </div>
                       </div>
@@ -1008,7 +1004,7 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
             <div className="diffExplorerControl">
               <div className="diffSelectorsRow">
                 <div className="diffSelector">
-                  <label>Left Document (Baseline):</label>
+                  <label>Left Document (Doc 1):</label>
                   <select
                     className="docPicker"
                     value={leftDocIdx}
@@ -1023,7 +1019,7 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
                 </div>
                 <div className="diffVsArrow">VS</div>
                 <div className="diffSelector">
-                  <label>Right Document (Target):</label>
+                  <label>Right Document (Doc 2):</label>
                   <select
                     className="docPicker"
                     value={rightDocIdx}
