@@ -9,11 +9,116 @@ function formatInlineBold(text) {
   )
 }
 
+function parseRejection(data) {
+  const rej = data?.rejection_details || {}
+  const msg = typeof data?.message === 'string' ? data.message : ''
+  let title = rej.title || data?.title || ''
+  let filename = rej.filename || data?.filename || data?.document?.filename || data?.document_metadata?.filename || 'Uploaded Document'
+  let reason = rej.reason || rej.why || ''
+  let reasonLabel = rej.reason_label || ''
+  let technicalDetail = rej.technical_detail || ''
+  let supported = rej.supported_formats || ''
+  let howToFix = rej.how_to_fix || ''
+
+  if (msg.includes('•') || (!reason && msg.includes('File Not Accepted'))) {
+    const parts = msg.split(/\s*•\s*/)
+    parts.forEach((p, idx) => {
+      const part = p.trim()
+      if (idx === 0 && !title) {
+        title = part.replace(/^File Not Accepted\s*[—–-]\s*/i, '').trim()
+      } else if (part.toLowerCase().startsWith('file:') && !filename) {
+        filename = part.substring(part.indexOf(':') + 1).trim()
+      } else if ((part.toLowerCase().includes('why it was not accepted:') || part.toLowerCase().includes('reason for rejection:') || part.toLowerCase().includes('policy violation:')) && !reason) {
+        reason = part.substring(part.indexOf(':') + 1).trim()
+        if (part.toLowerCase().includes('policy violation:')) {
+          reasonLabel = 'Security & Policy Violation'
+        }
+      } else if (part.toLowerCase().includes('technical details:') && !technicalDetail) {
+        technicalDetail = part.substring(part.indexOf(':') + 1).trim()
+      } else if (part.toLowerCase().includes('supported formats') && !supported) {
+        supported = part.substring(part.indexOf(':') + 1).trim()
+      } else if (part.toLowerCase().includes('how to fix') && !howToFix) {
+        howToFix = part.substring(part.indexOf(':') + 1).trim()
+      }
+    })
+  }
+  if (!title) title = 'File Not Accepted'
+  const isSecurity = /credential|secret|access key|password|token/i.test(title + ' ' + reason)
+  if (!reasonLabel) {
+    reasonLabel = isSecurity ? 'Security & Policy Violation' : 'Reason for Rejection'
+  }
+  const isFormatIssue = 
+    /format|extension|unsupported|binary|unreadable|corrupt|container|mime/i.test(title + ' ' + reason + ' ' + technicalDetail) &&
+    !isSecurity && !/empty|blank/i.test(title + ' ' + reason)
+
+  return { title, filename, reason, reasonLabel, technicalDetail, supported: isFormatIssue ? supported : '', howToFix, isSecurity }
+}
+
 export default function EchoResultCard({ data, guardrails: propGuardrails }) {
   if (!data) return null
 
   const guardrails = propGuardrails || data?.guardrails || {}
   const traceId = data?.trace_id || guardrails?.trace_id || ''
+
+  // 1. Structured File Rejection Card
+  if (data.rejected || data.rejection_details || (typeof data.message === 'string' && data.message.includes('File Not Accepted'))) {
+    const rej = parseRejection(data)
+
+    return (
+      <div className="echoRejectionCard">
+        <div className="echoRejectionBanner">
+          <div className="rejectionBannerLeft">
+            <div className="rejectionAlertPill">
+              <span className="alertDot" />
+              <span>FILE REJECTED</span>
+            </div>
+            <h4 className="rejectionAlertHeading">{rej.title}</h4>
+          </div>
+          <div className="echoRejectionFile">
+            <span className="fileIcon">📄</span>
+            <span className="fileName">{rej.filename}</span>
+            <span className="fileBlockedBadge">BLOCKED</span>
+          </div>
+        </div>
+
+        <div className="echoRejectionBody">
+          {rej.reason && (
+            <div className="rejectionSection">
+              <span className="rejectionLabel">{rej.reasonLabel}</span>
+              <p className="rejectionValue">{rej.reason}</p>
+            </div>
+          )}
+
+          {rej.technicalDetail && (
+            <div className="rejectionSection">
+              <span className="rejectionLabel">Technical Details</span>
+              <p className="rejectionValue mono">{rej.technicalDetail}</p>
+            </div>
+          )}
+
+          {rej.supported && (
+            <div className="rejectionSection">
+              <span className="rejectionLabel">Supported Formats for ECHO</span>
+              <p className="rejectionValue">{rej.supported}</p>
+            </div>
+          )}
+
+          {rej.howToFix && (
+            <div className="rejectionSection fixSection">
+              <span className="rejectionLabel">How to Fix & Re-upload</span>
+              <p className="rejectionValue">{rej.howToFix}</p>
+            </div>
+          )}
+
+          {!rej.reason && (
+            <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6, fontSize: '13.5px', color: '#e2e8f0' }}>
+              {data.message}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   if (data.type === 'chat' || !Array.isArray(data.changes)) {
     return (
@@ -150,7 +255,12 @@ export default function EchoResultCard({ data, guardrails: propGuardrails }) {
           </div>
           <h3 className="echoTitle">{data.comparison_title || 'Document Comparison'}</h3>
         </div>
-        <span className={`impactBadge ${impactClass}`}>{impactLabel}</span>
+        <span
+          className={`impactBadge ${impactClass}`}
+          style={impact === 'HIGH' ? { background: 'rgba(239, 68, 68, 0.22)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.75)' } : {}}
+        >
+          {impactLabel}
+        </span>
       </div>
 
       <div className="metricsStrip" aria-label="Comparison summary metrics">
@@ -161,7 +271,8 @@ export default function EchoResultCard({ data, guardrails: propGuardrails }) {
         <span className="metricSep">|</span>
         <span className="metricItem">
           <i className="metricDot dotAlert" />
-          <strong>{m.high_impact ?? 0}</strong> High Impact
+          <strong style={{ color: (m.high_impact ?? 0) > 0 ? '#ef4444' : 'inherit' }}>{m.high_impact ?? 0}</strong>{' '}
+          <span style={{ color: (m.high_impact ?? 0) > 0 ? '#f87171' : 'inherit' }}>High Impact</span>
         </span>
         <span className="metricSep">|</span>
         <span className="metricItem">

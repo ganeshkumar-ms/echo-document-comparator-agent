@@ -75,8 +75,8 @@ button, input {
   overflow: hidden;
   position: relative;
   background:
-    radial-gradient(circle at 50% -10%, rgba(7, 140, 255, 0.22), transparent 36%),
-    radial-gradient(circle at 95% 90%, rgba(100, 7, 7, 0.26), transparent 32%),
+    radial-gradient(circle at 50% -10%, rgba(7, 140, 255, 0.18), transparent 36%),
+    radial-gradient(circle at 95% 90%, rgba(56, 189, 248, 0.10), transparent 32%),
     var(--bg);
 }
 
@@ -85,8 +85,8 @@ button, input {
   inset: -30%;
   pointer-events: none;
   background:
-    radial-gradient(circle at 24% 25%, rgba(7, 140, 255, 0.27), transparent 23%),
-    radial-gradient(circle at 78% 70%, rgba(100, 7, 7, 0.22), transparent 25%);
+    radial-gradient(circle at 24% 25%, rgba(7, 140, 255, 0.16), transparent 23%),
+    radial-gradient(circle at 78% 70%, rgba(56, 189, 248, 0.10), transparent 25%);
   filter: none;
   animation: drift 16s ease-in-out infinite alternate;
   z-index: 0;
@@ -183,7 +183,7 @@ header {
   font-size: 21px;
   font-weight: 800;
   letter-spacing: 7px;
-  background: linear-gradient(100deg, #ffffff 0%, #ff8585 38%, #078cff 68%, #ffffff 100%);
+  background: linear-gradient(100deg, #ffffff 0%, #38bdf8 38%, #078cff 68%, #ffffff 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
   background-clip: text;
@@ -197,8 +197,8 @@ header {
   align-items: center;
   justify-content: center;
   border: 1px solid var(--line);
-  background: rgba(41, 7, 7, 0.72);
-  color: #f3c8c8;
+  background: rgba(5, 26, 44, 0.72);
+  color: #f0f7ff;
   border-radius: 999px;
   padding: 9px 15px;
   font-size: 12px;
@@ -240,7 +240,7 @@ header {
 }
 
 .home h1 span {
-  background: linear-gradient(95deg, #ffffff, #ff8f8f, var(--a1), #ff6b6b);
+  background: linear-gradient(95deg, #ffffff, #38bdf8, var(--a1), #38bdf8);
   background-size: 220% 220%;
   -webkit-background-clip: text;
   color: transparent;
@@ -268,7 +268,7 @@ header {
   position: absolute;
   inset: -2px;
   border-radius: 24px;
-  background: conic-gradient(from var(--angle), transparent 40%, #078cff, transparent 56%, #640707, transparent 72%);
+  background: conic-gradient(from var(--angle), transparent 40%, #078cff, transparent 56%, var(--a2), transparent 72%);
   filter: blur(10px);
   opacity: 0.42;
   animation: angleSpin 9s linear infinite;
@@ -390,7 +390,7 @@ header {
   gap: 8px;
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(41, 7, 7, 0.92);
+  background: rgba(5, 26, 44, 0.92);
   border: 1px solid rgba(7, 140, 255, 0.42);
   font-size: 13px;
   color: #ffffff;
@@ -402,7 +402,7 @@ header {
   font-size: 11px;
   font-weight: 700;
   background: rgba(7, 140, 255, 0.25);
-  color: #ff9c9c;
+  color: #38bdf8;
 }
 
 .attachName {
@@ -415,7 +415,7 @@ header {
 .attachRemove {
   border: 0;
   background: transparent;
-  color: #f3aaaa;
+  color: #f0f7ff;
   cursor: pointer;
   font-size: 16px;
   line-height: 1;
@@ -427,9 +427,9 @@ header {
 }
 
 .attachAddV2 {
-  border: 1px dashed rgba(255, 123, 123, 0.55);
+  border: 1px dashed rgba(7, 140, 255, 0.55);
   background: rgba(7, 140, 255, 0.10);
-  color: #ffd0d0;
+  color: #f0f7ff;
   border-radius: 999px;
   padding: 6px 12px;
   font-size: 12.5px;
@@ -456,7 +456,7 @@ header {
 
 .recentHead b {
   font-size: 14px;
-  color: #f4dfdf;
+  color: #f0f7ff;
   letter-spacing: 0;
   font-weight: 600;
 }
@@ -474,40 +474,36 @@ header {
   gap: 12px;
 }
 
-.card, .emptyCard {
+.card {
   min-height: auto;
-  padding: 14px 16px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   text-align: left;
-  border: 1px solid var(--line);
-  border-radius: 16px;
+  border: 1px solid rgba(7, 140, 255, 0.18);
+  border-radius: 12px;
   color: #ffffff;
-  background: rgba(41, 7, 7, 0.72);
-  backdrop-filter: blur(14px);
-}
-
-.card {
+  background: #051a2c;
   cursor: pointer;
   transition: all 0.25s ease;
 }
 
 .card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(7, 140, 255, 0.58);
-  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.45);
+  transform: translateY(-2px);
+  border-color: rgba(7, 140, 255, 0.45);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
 }
 
 .card small {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--a1-bright);
-  font-weight: 600;
-  letter-spacing: 0.7px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
 }
 
 .card b {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: #ffffff;
   white-space: nowrap;
@@ -518,8 +514,8 @@ header {
 .card p {
   margin: 0;
   color: var(--muted);
-  font-size: 12px;
-  line-height: 1.45;
+  font-size: 11.5px;
+  line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -528,9 +524,18 @@ header {
 
 .emptyCard {
   grid-column: 1 / -1;
-  align-items: center;
+  max-width: 100%;
+  width: 100%;
+  margin: 0 auto;
+  padding: 12px 18px;
   text-align: center;
-  padding: 20px 18px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: rgba(5, 26, 44, 0.5);
+  border: 1px dashed rgba(7, 140, 255, 0.25);
+  gap: 3px;
+  cursor: default;
 }
 
 .emptyTitle {
@@ -570,7 +575,7 @@ header {
 /* Translucent Crimson Sidebar matching ECHO surface */
 .side {
   border-right: 1px solid rgba(7, 140, 255, 0.24);
-  background: linear-gradient(180deg, rgba(64, 12, 12, 0.72) 0%, rgba(44, 7, 7, 0.78) 100%);
+  background: linear-gradient(180deg, rgba(5, 26, 44, 0.85) 0%, rgba(5, 26, 44, 0.95) 100%);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   padding: 20px 14px;
@@ -663,7 +668,7 @@ header {
 
 .histRow.on {
   background: rgba(7, 140, 255, 0.20);
-  box-shadow: inset 0 0 0 1px rgba(255, 123, 123, 0.34);
+  box-shadow: inset 0 0 0 1px rgba(7, 140, 255, 0.34);
 }
 
 .histRow .hist {
@@ -673,7 +678,7 @@ header {
   line-height: 40px;
   border: 0;
   background: transparent;
-  color: #d9b2b2;
+  color: #849bb4;
   text-align: left;
   padding: 0 14px 0 12px;
   margin: 0;
@@ -707,10 +712,10 @@ header {
   gap: 4px;
   padding: 3px;
   border-radius: 9px;
-  background: rgba(52, 9, 9, 0.88);
+  background: rgba(5, 26, 44, 0.88);
   backdrop-filter: blur(12px) saturate(150%);
   -webkit-backdrop-filter: blur(12px) saturate(150%);
-  border: 1px solid rgba(255, 123, 123, 0.44);
+  border: 1px solid rgba(7, 140, 255, 0.44);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
   opacity: 0;
   pointer-events: none;
@@ -734,7 +739,7 @@ header {
   cursor: pointer;
   border: 1px solid transparent;
   background: rgba(255, 255, 255, 0.06);
-  color: #f3c4c4;
+  color: #f0f7ff;
   transition: all 0.15s ease;
 }
 
@@ -745,8 +750,8 @@ header {
 }
 
 .histIcon.edit:hover {
-  background: rgba(255, 123, 123, 0.24);
-  border-color: rgba(255, 123, 123, 0.6);
+  background: rgba(7, 140, 255, 0.24);
+  border-color: rgba(7, 140, 255, 0.6);
   color: #ffffff;
 }
 
@@ -762,7 +767,7 @@ header {
   padding: 0 10px;
   border-radius: 8px;
   border: 1px solid var(--a1);
-  background: #1a0303;
+  background: #051a2c;
   color: #ffffff;
   font-size: 14px;
   outline: none;
@@ -810,7 +815,7 @@ header {
   margin-top: auto;
   border-top: 1px solid rgba(7, 140, 255, 0.16);
   padding: 14px 8px 2px;
-  color: #9e7373;
+  color: #849bb4;
   font-size: 11px;
   letter-spacing: 0.9px;
   flex-shrink: 0;
@@ -870,7 +875,7 @@ header {
 .titleInput {
   border: 1px solid var(--a1);
   border-radius: 7px;
-  background: #220404;
+  background: #051a2c;
   color: #ffffff;
   padding: 4px 9px;
   font-size: 15px;
@@ -915,7 +920,7 @@ header {
   text-align: center;
   padding: 26px 24px;
   border-radius: 18px;
-  background: rgba(41, 7, 7, 0.65);
+  background: rgba(5, 26, 44, 0.65);
   border: 1px solid var(--line);
 }
 
@@ -937,7 +942,7 @@ header {
   padding: 2px 6px;
   border-radius: 6px;
   background: rgba(7, 140, 255, 0.18);
-  color: #ffd0d0;
+  color: #f0f7ff;
   font-size: 13px;
 }
 
@@ -963,7 +968,7 @@ header {
 .bubble.ai {
   align-self: flex-start;
   width: min(100%, 760px);
-  background: rgba(41, 7, 7, 0.88);
+  background: rgba(5, 26, 44, 0.88);
   border: 1px solid var(--line);
   border-radius: 18px 18px 18px 5px;
   backdrop-filter: blur(18px);
@@ -1042,7 +1047,7 @@ header {
   padding: 13px 16px;
   border: 1px solid var(--line);
   border-radius: 18px 18px 18px 5px;
-  background: rgba(41, 7, 7, 0.9);
+  background: rgba(5, 26, 44, 0.9);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1052,7 +1057,7 @@ header {
   font-weight: 800;
   letter-spacing: 3px;
   font-size: 12px;
-  background: linear-gradient(90deg, #ff9999, #ffffff, #078cff);
+  background: linear-gradient(90deg, #38bdf8, #ffffff, #078cff);
   background-size: 220% auto;
   -webkit-background-clip: text;
   color: transparent;
@@ -1091,7 +1096,7 @@ header {
   padding: 8px;
   border: 1px solid var(--line);
   border-radius: 20px;
-  background: rgba(34, 5, 5, 0.94);
+  background: rgba(5, 26, 44, 0.94);
   box-shadow: 0 14px 48px rgba(0, 0, 0, 0.55);
   transition: all 0.25s ease;
 }
@@ -1109,7 +1114,7 @@ header {
 
 .fine {
   text-align: center;
-  color: #9b7373;
+  color: #849bb4;
   font-size: 11px;
   letter-spacing: 0.8px;
   margin-top: 8px;
@@ -1162,15 +1167,15 @@ header {
 }
 
 .impactHigh {
-  background: rgba(7, 140, 255, 0.26);
-  border: 1px solid rgba(255, 76, 76, 0.72);
-  color: #ffb4b4;
+  background: rgba(239, 68, 68, 0.22);
+  border: 1px solid rgba(239, 68, 68, 0.75);
+  color: #f87171;
 }
 
 .impactMed {
-  background: rgba(245, 158, 11, 0.18);
-  border: 1px solid rgba(251, 191, 36, 0.52);
-  color: #fde68a;
+  background: rgba(250, 204, 21, 0.18);
+  border: 1px solid rgba(250, 204, 21, 0.52);
+  color: #facc15;
 }
 
 .impactLow {
@@ -1197,7 +1202,7 @@ header {
   background: rgba(0, 0, 0, 0.28);
   border: 1px solid rgba(7, 140, 255, 0.20);
   font-size: 13px;
-  color: #f1dada;
+  color: #f0f7ff;
 }
 
 .metricItem {
@@ -1223,11 +1228,11 @@ header {
   display: inline-block;
 }
 
-.dotCrimson { background: #ff4747; box-shadow: 0 0 8px #ff4747; }
-.dotAlert   { background: #ff8a3d; box-shadow: 0 0 8px #ff8a3d; }
+.dotCrimson { background: #f87171; box-shadow: 0 0 8px #f87171; }
+.dotAlert   { background: #facc15; box-shadow: 0 0 8px #facc15; }
 .dotAdd     { background: #34d399; }
 .dotDel     { background: #f87171; }
-.dotMod     { background: #fbbf24; }
+.dotMod     { background: #facc15; }
 
 .impactHeadline {
   padding: 10px 14px;
@@ -1243,7 +1248,7 @@ header {
   margin: 0;
   font-size: 14.5px;
   line-height: 1.65;
-  color: #e8cfcf;
+  color: #f0f7ff;
 }
 
 .echoSection {
@@ -1268,7 +1273,7 @@ header {
 .changeItem {
   padding: 14px;
   border-radius: 13px;
-  background: rgba(19, 2, 2, 0.64);
+  background: rgba(5, 26, 44, 0.64);
   border: 1px solid rgba(7, 140, 255, 0.22);
   display: flex;
   flex-direction: column;
@@ -1305,11 +1310,11 @@ header {
 .typePill {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.16);
-  color: #f3dada;
+  color: #f0f7ff;
 }
 
-.sevHigh { background: rgba(7, 140, 255, 0.25); color: #ffb3b3; border: 1px solid rgba(7, 140, 255, 0.55); }
-.sevMed  { background: rgba(245, 158, 11, 0.18); color: #fde68a; border: 1px solid rgba(245, 158, 11, 0.42); }
+.sevHigh { background: rgba(7, 140, 255, 0.25); color: #f87171; border: 1px solid rgba(7, 140, 255, 0.55); }
+.sevMed  { background: rgba(250, 204, 21, 0.18); color: #facc15; border: 1px solid rgba(250, 204, 21, 0.42); }
 .sevLow  { background: rgba(96, 165, 250, 0.16); color: #bfdbfe; border: 1px solid rgba(96, 165, 250, 0.42); }
 
 .diffPair {
@@ -1327,7 +1332,7 @@ header {
 
 .diffBox p {
   margin: 4px 0 0;
-  color: #f5ebeb;
+  color: #f0f7ff;
 }
 
 .diffTag {
@@ -1342,7 +1347,7 @@ header {
 }
 
 .diffPrev .diffTag {
-  color: #ff8e8e;
+  color: #38bdf8;
 }
 
 .diffNew {
@@ -1375,11 +1380,11 @@ header {
 }
 
 .meaningVal {
-  color: #f6eaea;
+  color: #f0f7ff;
 }
 
 .actionText {
-  color: #fde68a;
+  color: #facc15;
 }
 
 .echoFooterGrid {
@@ -1402,7 +1407,7 @@ header {
   font-weight: 600;
   background: rgba(7, 140, 255, 0.14);
   border: 1px solid rgba(7, 140, 255, 0.34);
-  color: #ffd7d7;
+  color: #f0f7ff;
 }
 
 .stepsList {
@@ -1412,7 +1417,7 @@ header {
   flex-direction: column;
   gap: 5px;
   font-size: 14px;
-  color: #f3dfdf;
+  color: #f0f7ff;
   line-height: 1.55;
 }
 
@@ -1421,7 +1426,7 @@ header {
   height: 100%;
   min-height: 0;
   border-left: 1px solid var(--line);
-  background: rgba(15, 2, 2, 0.96);
+  background: rgba(5, 26, 44, 0.96);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1452,7 +1457,7 @@ header {
   padding: 3px 9px;
   border-radius: 999px;
   background: rgba(7, 140, 255, 0.22);
-  color: #ff9c9c;
+  color: #38bdf8;
   border: 1px solid rgba(7, 140, 255, 0.42);
 }
 
@@ -1487,7 +1492,7 @@ header {
 .docTab {
   border: 1px solid rgba(7, 140, 255, 0.25);
   background: transparent;
-  color: #e4bebe;
+  color: #f0f7ff;
   border-radius: 8px;
   padding: 6px 11px;
   font-size: 12.5px;
@@ -1515,7 +1520,7 @@ header {
   width: 100%;
   height: 100%;
   border: 0;
-  background: #140303;
+  background: #051a2c;
 }
 
 .docPre {
@@ -1525,7 +1530,7 @@ header {
   word-break: break-word;
   font-size: 13.5px;
   line-height: 1.65;
-  color: #f7e4e4;
+  color: #f0f7ff;
 }
 
 .docState {
@@ -1536,7 +1541,7 @@ header {
 }
 
 .docState.err {
-  color: #ff8e8e;
+  color: #38bdf8;
 }
 
 .errScreen {
@@ -1590,8 +1595,8 @@ header {
     padding: 0 12px;
     border: 1px solid var(--line);
     border-radius: 12px;
-    background: rgba(41, 7, 7, 0.72);
-    color: #f3c8c8;
+    background: rgba(5, 26, 44, 0.72);
+    color: #f0f7ff;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
@@ -1973,4 +1978,150 @@ html, body {
     font-size: 11px !important;
     padding: 7px 10px !important;
   }
+}
+
+
+/* ============================================================
+   STRUCTURED FILE REJECTION CARD (DISTINCT ALERT DESIGN)
+   ============================================================ */
+.bubble.ai.rejectionBubble {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  max-width: min(100%, 780px) !important;
+  width: 100% !important;
+}
+
+.echoRejectionCard {
+  background: linear-gradient(180deg, rgba(32, 10, 16, 0.96) 0%, rgba(18, 5, 9, 0.98) 100%);
+  border: 1.5px solid rgba(239, 68, 68, 0.65);
+  border-radius: 16px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 12px 40px rgba(239, 68, 68, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.echoRejectionBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.rejectionBannerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rejectionAlertPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  background: #ef4444;
+  color: #ffffff;
+  text-transform: uppercase;
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.55);
+}
+
+.alertDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 6px #ffffff;
+}
+
+.rejectionAlertHeading {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fca5a5;
+  letter-spacing: 0.2px;
+}
+
+.echoRejectionFile {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #f1f5f9;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+}
+
+.fileBlockedBadge {
+  font-size: 10px;
+  font-weight: 800;
+  color: #ffffff;
+  background: #ef4444;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.echoRejectionBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.echoRejectionCard .rejectionSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.echoRejectionCard .rejectionLabel {
+  font-size: 11px;
+  font-weight: 750;
+  color: #f87171;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+
+.echoRejectionCard .rejectionValue {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #f1f5f9;
+}
+
+.echoRejectionCard .rejectionValue.mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: #fca5a5;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.echoRejectionCard .rejectionSection.fixSection {
+  background: rgba(7, 140, 255, 0.08);
+  border: 1px solid rgba(7, 140, 255, 0.22);
+  padding: 10px 14px;
+  border-radius: 8px;
+}
+
+.echoRejectionCard .rejectionSection.fixSection .rejectionLabel {
+  color: #38bdf8;
 }

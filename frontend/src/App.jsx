@@ -389,7 +389,7 @@ export default function App() {
         id: `a_${Date.now()}`,
         role: 'assistant',
         content: res.type === 'chat' ? res.message : res.impact_headline || res.summary || 'Comparison complete',
-        structured: res.type === 'comparison' ? res : null,
+        structured: (res.type === 'comparison' || res.rejected || res.rejection_details) ? res : null,
       }
 
       setSessions(prev =>
@@ -509,30 +509,32 @@ export default function App() {
               </div>
 
               {attachedFiles.length > 0 && (
-                <div className="attachedRow">
-                  {attachedFiles.map((f, idx) => (
-                    <span key={`${f.name}-${idx}`} className="attachChip">
-                      <span className="attachVer">{idx === 0 ? 'File 1' : 'File 2'}</span>
-                      <span className="attachName">{f.name}</span>
+                <div style={{ display: 'flex', justifyContent: 'center', width: '100%', margin: '12px auto 0' }}>
+                  <div className="attachedRow">
+                    {attachedFiles.map((f, idx) => (
+                      <span key={`${f.name}-${idx}`} className="attachChip">
+                        <span className="attachVer">{idx === 0 ? 'File 1' : 'File 2'}</span>
+                        <span className="attachName">{f.name}</span>
+                        <button
+                          type="button"
+                          className="attachRemove"
+                          aria-label={`Remove ${f.name}`}
+                          onClick={() => removeAttachedFile(idx)}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                    {attachedFiles.length === 1 && (
                       <button
                         type="button"
-                        className="attachRemove"
-                        aria-label={`Remove ${f.name}`}
-                        onClick={() => removeAttachedFile(idx)}
+                        className="attachAddV2"
+                        onClick={() => homeFileRef.current?.click()}
                       >
-                        ×
+                        + Attach File 2
                       </button>
-                    </span>
-                  ))}
-                  {attachedFiles.length === 1 && (
-                    <button
-                      type="button"
-                      className="attachAddV2"
-                      onClick={() => homeFileRef.current?.click()}
-                    >
-                      + Attach File 2
-                    </button>
-                  )}
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -659,11 +661,12 @@ export default function App() {
 
                   {activeMessages.map((msg, idx) => {
                     const isLastAi = msg.role === 'assistant' && idx === lastAiIndex
+                    const isRejection = msg.structured?.rejected || msg.structured?.rejection_details || (typeof msg.content === 'string' && msg.content.includes('File Not Accepted')) || (typeof msg.structured?.message === 'string' && msg.structured.message.includes('File Not Accepted'))
                     return (
                       <div
                         key={msg.id || idx}
                         ref={isLastAi ? lastAiRef : null}
-                        className={`bubble ${msg.role === 'user' ? 'user' : 'ai'}`}
+                        className={`bubble ${msg.role === 'user' ? 'user' : isRejection ? 'ai rejectionBubble' : 'ai'}`}
                       >
                         {msg.role === 'user' && Array.isArray(msg.docs) && msg.docs.length > 0 && (
                           <div className="userDocs">
@@ -714,30 +717,32 @@ export default function App() {
 
                 <div className="composerArea">
                   {attachedFiles.length > 0 && (
-                    <div className="attachedRow composerAttached">
-                      {attachedFiles.map((f, idx) => (
-                        <span key={`${f.name}-${idx}`} className="attachChip">
-                          <span className="attachVer">{idx === 0 ? 'File 1' : 'File 2'}</span>
-                          <span className="attachName">{f.name}</span>
+                    <div style={{ display: 'flex', justifyContent: 'center', width: '100%', margin: '0 auto 10px' }}>
+                      <div className="attachedRow composerAttached">
+                        {attachedFiles.map((f, idx) => (
+                          <span key={`${f.name}-${idx}`} className="attachChip">
+                            <span className="attachVer">{idx === 0 ? 'File 1' : 'File 2'}</span>
+                            <span className="attachName">{f.name}</span>
+                            <button
+                              type="button"
+                              className="attachRemove"
+                              aria-label={`Remove ${f.name}`}
+                              onClick={() => removeAttachedFile(idx)}
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                        {attachedFiles.length === 1 && (
                           <button
                             type="button"
-                            className="attachRemove"
-                            aria-label={`Remove ${f.name}`}
-                            onClick={() => removeAttachedFile(idx)}
+                            className="attachAddV2"
+                            onClick={() => chatFileRef.current?.click()}
                           >
-                            ×
+                            + Add File 2
                           </button>
-                        </span>
-                      ))}
-                      {attachedFiles.length === 1 && (
-                        <button
-                          type="button"
-                          className="attachAddV2"
-                          onClick={() => chatFileRef.current?.click()}
-                        >
-                          + Add File 2
-                        </button>
-                      )}
+                        )}
+                      </div>
                     </div>
                   )}
 

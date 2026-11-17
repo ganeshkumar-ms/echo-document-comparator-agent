@@ -53,9 +53,11 @@ def _read_s3_bytes(key: str) -> bytes:
     return obj['Body'].read()
 
 
+@app.get('/')
+@app.get('/health')
 @app.get('/api/health')
 def health():
-    return {'status': 'healthy', 'service': 'ECHO DOCUMENT COMPARATOR'}
+    return {'status': 'healthy', 'agent': 'ECHO', 'eyebrow': 'DOCUMENT COMPARATOR', 'service': 'ECHO DOCUMENT COMPARATOR'}
 
 
 @app.post('/api/get-upload-url')

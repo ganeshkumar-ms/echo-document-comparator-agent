@@ -109,12 +109,25 @@ def _build_rejection(
         'supported_formats',
         'PDF, DOCX, XLSX, CSV, JSON, XML, HTML, Markdown (.md), TXT',
     )
+    is_format_issue = reason_code in (
+        'UNSUPPORTED_EXTENSION',
+        'LEGACY_BINARY_OFFICE',
+        'MEDIA_AUDIO_NOT_SUPPORTED',
+        'MEDIA_VIDEO_NOT_SUPPORTED',
+        'UNSUPPORTED_BINARY_FORMAT',
+        'UNREADABLE_BINARY_FILE',
+        'UNSUPPORTED_ARCHIVE',
+        'EXTRACTION_FAILED',
+    )
+    supported_line = f"• Supported Formats for {agent_name}: {supported}\n" if is_format_issue else ""
+    reason_label = "Security Policy Violation" if ("CREDENTIAL" in reason_code or "SECRET" in reason_code) else "Reason for Rejection"
+
     message = (
         f"File Not Accepted — {title}\n\n"
         f"• File: {filename} ({detected_type}, {_human_size(size_bytes)})\n"
-        f"• Why It Was Not Accepted: {why}\n"
+        f"• {reason_label}: {why}\n"
         f"• Technical Details: {technical_detail}\n"
-        f"• Supported Formats for {agent_name}: {supported}\n"
+        f"{supported_line}"
         f"• How to Fix & Re-upload: {how_to_fix}"
     )
     return {
@@ -125,8 +138,9 @@ def _build_rejection(
         'detected_type': detected_type,
         'size_bytes': size_bytes,
         'reason': why,
+        'reason_label': reason_label,
         'technical_detail': technical_detail,
-        'supported_formats': supported,
+        'supported_formats': supported if is_format_issue else None,
         'how_to_fix': how_to_fix,
         'message': message,
     }
