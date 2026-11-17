@@ -94,17 +94,17 @@ export default function EchoResultCard({ data, guardrails: propGuardrails }) {
             background: guardrails?.status === 'BLOCKED'
               ? 'rgba(239, 68, 68, 0.22)'
               : guardrails?.status === 'REDACTED'
-              ? 'rgba(251, 191, 36, 0.16)'
+              ? 'rgba(52, 211, 153, 0.16)'
               : 'rgba(52, 211, 153, 0.16)',
             color: guardrails?.status === 'BLOCKED'
               ? '#f87171'
               : guardrails?.status === 'REDACTED'
-              ? '#fbbf24'
+              ? '#34d399'
               : '#34d399',
             border: guardrails?.status === 'BLOCKED'
               ? '1px solid rgba(239, 68, 68, 0.65)'
               : guardrails?.status === 'REDACTED'
-              ? '1px solid rgba(251, 191, 36, 0.5)'
+              ? '1px solid rgba(52, 211, 153, 0.45)'
               : '1px solid rgba(52, 211, 153, 0.45)'
           }}
         >

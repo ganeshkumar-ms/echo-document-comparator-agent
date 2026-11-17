@@ -156,32 +156,19 @@ def validate_file_pre_extract(
     detected_type = ext or 'unknown extension'
 
     # 1b. Raw Credential & Access Key File Guardrail (PCI-DSS & GLBA)
-    is_cred_name = bool(re.search(r'(?i)\b(?:access[_\-]?keys?|credentials?|\.env|id_rsa|private[_\-]?key)\b', fname))
-    has_raw_key = bool(re.search(rb'\b(?:AKIA|ASIA)[0-9A-Z]{16}\b', data[:8192]))
-    if is_cred_name or has_raw_key:
+    is_cred_name = bool(re.search(r'(?i)(?:access[_\-]?keys?|credentials?|\.env|id_rsa|private[_\-]?key|secret|aws|apikey|api_key|token)', fname))
+    has_raw_key = bool(re.search(rb'(?i)(?:AKIA|ASIA)[0-9A-Z]{16}', data[:16384]))
+    has_raw_key_text = bool(re.search(rb'(?i)(?:access\s*key\s*id|secret\s*access\s*key|aws_access_key_id|aws_secret_access_key)', data[:16384]))
+    if is_cred_name or has_raw_key or has_raw_key_text:
         return _build_rejection(
             reason_code='SENSITIVE_CREDENTIALS_FILE',
             title='Authentication Credentials / Access Keys Rejected',
             filename=fname,
             detected_type=detected_type,
             size_bytes=size_bytes,
-            why=f"ECHO strictly refuses to accept, store, or process raw cloud infrastructure access keys, secret keys, or authentication credential files ('{fname}').",
-            technical_detail='Raw AWS access keys or credential file markers detected in file payload.',
-            how_to_fix='Remove access keys and authentication secrets before uploading documents.',
-            policy=pol,
-        )
-
-    # 1. Empty (0 bytes)
-    if size_bytes == 0 or len(data) == 0:
-        return _build_rejection(
-            reason_code='EMPTY_FILE',
-            title='Empty File (0 Bytes)',
-            filename=fname,
-            detected_type=detected_type,
-            size_bytes=0,
-            why=f"{agent_name} cannot process '{fname}' because the file contains 0 bytes and has no readable text, structure, or document content.",
-            technical_detail='Uploaded payload length is 0 bytes.',
-            how_to_fix='Open the source document, verify that it contains content, save it properly, and upload the non-empty file.',
+            why=f"{agent_name} strictly refuses to accept, store, or process raw cloud infrastructure access keys, secret keys, or authentication credential files ('{fname}').",
+            technical_detail='Raw AWS access keys, credential headers, or credential file markers detected in file payload.',
+            how_to_fix='Remove access keys and authentication secrets before uploading documents for analysis.',
             policy=pol,
         )
 
