@@ -73,6 +73,9 @@ function deriveTitle(rawPrompt, docs) {
 function deriveDocVersion(fileName, idx, total, priorDoc) {
   const m = String(fileName || '').match(/\b(?:v(?:er(?:sion)?)?|rev(?:ision)?)[._-]?(\d+(?:\.\d+)?)\b/i)
   if (m) return `v${m[1]}`
+  if (total === 1 && priorDoc) return 'File 2'
+  if (total <= 2) return idx === 0 ? 'File 1' : 'File 2'
+  return `Doc ${idx + 1}`
   if (total === 1 && priorDoc) return 'Doc 2'
   const num = (typeof idx === 'number' && !isNaN(idx)) ? idx + 1 : 1
   return `Doc ${num}`
@@ -156,9 +159,9 @@ function persistSessions(list) {
           ...m,
           docs: Array.isArray(m.docs)
             ? m.docs.map(({ blobUrl, viewerHtml, extractedText, ...rest }) => ({
-                ...rest,
-                extractedText: extractedText ? String(extractedText).slice(0, 16000) : undefined,
-              }))
+              ...rest,
+              extractedText: extractedText ? String(extractedText).slice(0, 16000) : undefined,
+            }))
             : undefined,
         })),
       }))
@@ -352,12 +355,12 @@ export default function App() {
       const updated = existing
         ? { ...existing, title: initialTitle, updatedAt: Date.now(), messages: nextMessages }
         : {
-            id: sessionId,
-            title: initialTitle,
-            titleLocked: false,
-            updatedAt: Date.now(),
-            messages: nextMessages,
-          }
+          id: sessionId,
+          title: initialTitle,
+          titleLocked: false,
+          updatedAt: Date.now(),
+          messages: nextMessages,
+        }
       return [updated, ...prev.filter(s => s.id !== sessionId)]
     })
 
@@ -416,14 +419,14 @@ export default function App() {
 
       const resolvedViewerDocs = Array.isArray(matchedViewerDocs) && matchedViewerDocs.length > 0
         ? matchedViewerDocs.map((vd, idx) => ({
-            name: vd.name,
-            size: localDocMeta[idx]?.size || '',
-            versionLabel: vd.version_label || localDocMeta[idx]?.versionLabel || deriveDocVersion(vd.name, idx, matchedViewerDocs.length, priorFile1Doc),
-            blobUrl: localDocMeta[idx]?.blobUrl,
-            viewerHtml: vd.viewer_html,
-            extractedText: vd.extracted_text,
-            s3Key: preparedDocs[idx]?.s3_key,
-          }))
+          name: vd.name,
+          size: localDocMeta[idx]?.size || '',
+          versionLabel: vd.version_label || localDocMeta[idx]?.versionLabel || deriveDocVersion(vd.name, idx, matchedViewerDocs.length, priorFile1Doc),
+          blobUrl: localDocMeta[idx]?.blobUrl,
+          viewerHtml: vd.viewer_html,
+          extractedText: vd.extracted_text,
+          s3Key: preparedDocs[idx]?.s3_key,
+        }))
         : localDocMeta
 
       const aiMsg = {
@@ -445,7 +448,7 @@ export default function App() {
         const postTitle = target.titleLocked
           ? target.title
           : res.comparison_title ||
-            (target.title === 'New conversation' ? deriveTitle(text, resolvedViewerDocs) : target.title)
+          (target.title === 'New conversation' ? deriveTitle(text, resolvedViewerDocs) : target.title)
         const updated = {
           ...target,
           title: postTitle,

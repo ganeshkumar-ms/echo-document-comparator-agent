@@ -11,6 +11,23 @@ function formatInlineBold(text) {
   )
 }
 
+function cleanExcerpt(text) {
+  if (!text) return ''
+  const str = String(text)
+  let unprintableCount = 0
+  const sampleLimit = Math.min(str.length, 500)
+  for (let i = 0; i < sampleLimit; i++) {
+    const code = str.charCodeAt(i)
+    if ((code < 32 && code !== 9 && code !== 10 && code !== 13) || code === 65533) {
+      unprintableCount++
+    }
+  }
+  if (unprintableCount > 5) {
+    return '[Binary or non-text document stream]'
+  }
+  return str
+}
+
 function parseRejection(data) {
   const rej = data?.rejection_details || {}
   const msg = typeof data?.message === 'string' ? data.message : ''
@@ -528,7 +545,7 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
             <div className="diffExplorerControl">
               <div className="diffSelectorsRow">
                 <div className="diffSelector">
-                  <label>Baseline Document (Before):</label>
+                  <label>First Document (Document 1):</label>
                   <select
                     className="docPicker"
                     value={leftDocIdx}
@@ -543,7 +560,7 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
                 </div>
                 <div className="diffVsArrow">VS</div>
                 <div className="diffSelector">
-                  <label>Revised Document (After):</label>
+                  <label>Second Document (Document 2):</label>
                   <select
                     className="docPicker"
                     value={rightDocIdx}
@@ -634,36 +651,40 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
                       </div>
                     </div>
 
-                    {/* Comparative Panels (Before vs After) */}
+                    {/* Comparative Panels (Document 1 vs Document 2) */}
                     <div className="diffComparisonGrid">
                       <div className="diffSidePanel diffBeforePanel">
                         <div className="diffPanelHeader">
-                          <span className="diffBadgeMinus">- BEFORE · BASELINE</span>
+                          <div className="diffBadgeWrap">
+                            <span className="diffTagBefore">{selectedLeftDoc.version_label || 'DOCUMENT 1'}</span>
+                          </div>
                           <span className="diffDocLabel" title={selectedLeftDoc.name}>
-                            {selectedLeftDoc.name || 'Original'}
+                            {selectedLeftDoc.name || 'Document 1'}
                           </span>
                         </div>
                         <div className="diffPanelContent">
                           {hasPrev ? (
-                            <p className="diffText beforeText">{c.previous_text}</p>
+                            <p className="diffText beforeText">{cleanExcerpt(c.previous_text)}</p>
                           ) : (
-                            <p className="diffTextEmpty">[Not present in baseline document]</p>
+                            <p className="diffTextEmpty">[Not present in {selectedLeftDoc.version_label || 'Document 1'}]</p>
                           )}
                         </div>
                       </div>
 
                       <div className="diffSidePanel diffAfterPanel">
                         <div className="diffPanelHeader">
-                          <span className="diffBadgePlus">+ AFTER · REVISED</span>
+                          <div className="diffBadgeWrap">
+                            <span className="diffTagAfter">{selectedRightDoc.version_label || 'DOCUMENT 2'}</span>
+                          </div>
                           <span className="diffDocLabel" title={selectedRightDoc.name}>
-                            {selectedRightDoc.name || 'Revised'}
+                            {selectedRightDoc.name || 'Document 2'}
                           </span>
                         </div>
                         <div className="diffPanelContent">
                           {hasNew ? (
-                            <p className="diffText afterText">{c.new_text}</p>
+                            <p className="diffText afterText">{cleanExcerpt(c.new_text)}</p>
                           ) : (
-                            <p className="diffTextEmpty removed">[Clause eliminated in revised version]</p>
+                            <p className="diffTextEmpty removed">[Not present in {selectedRightDoc.version_label || 'Document 2'}]</p>
                           )}
                         </div>
                       </div>
@@ -741,7 +762,7 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
             <div className="diffExplorerControl">
               <div className="diffSelectorsRow">
                 <div className="diffSelector">
-                  <label>Baseline Document (Before):</label>
+                  <label>First Document (Document 1):</label>
                   <select
                     className="docPicker"
                     value={leftDocIdx}
@@ -756,7 +777,7 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
                 </div>
                 <div className="diffVsArrow">VS</div>
                 <div className="diffSelector">
-                  <label>Revised Document (After):</label>
+                  <label>Second Document (Document 2):</label>
                   <select
                     className="docPicker"
                     value={rightDocIdx}
@@ -825,9 +846,9 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
                 <thead>
                   <tr>
                     <th className="chColClause">Clause &amp; Topic</th>
-                    <th className="chColPrev">Before · Baseline Excerpt</th>
-                    <th className="chColNew">After · Revised Excerpt</th>
-                    <th className="chColImpact">What Changed &amp; Impact</th>
+                    <th className="chColPrev">{selectedLeftDoc.version_label || 'Document 1'} Excerpt</th>
+                    <th className="chColNew">{selectedRightDoc.version_label || 'Document 2'} Excerpt</th>
+                    <th className="chColImpact">Difference &amp; Impact</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -863,10 +884,10 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
                           </div>
                         </td>
                         <td className="excerptCell excerptPrev">
-                          <div className="cellExcerptText">{c.previous_text || '—'}</div>
+                          <div className="cellExcerptText">{cleanExcerpt(c.previous_text) || '—'}</div>
                         </td>
                         <td className="excerptCell excerptNew">
-                          <div className="cellExcerptText">{c.new_text || '—'}</div>
+                          <div className="cellExcerptText">{cleanExcerpt(c.new_text) || '—'}</div>
                         </td>
                         <td className="impactCell">
                           <div className="impactWhat">

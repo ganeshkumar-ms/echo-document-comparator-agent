@@ -177,22 +177,31 @@ def extract_document_text(raw_bytes: bytes, file_name: str = 'document.txt') -> 
     if ext == 'xlsx':
         return _extract_xlsx_text(raw_bytes)[:45000]
 
+    # Quick check for pure binary payload
+    if b'\x00' in raw_bytes[:4096]:
+        return ''
+
+    text = ''
     for enc in ('utf-8', 'utf-8-sig', 'utf-16'):
         try:
-            text = raw_bytes.decode(enc)
-            break
+            candidate = raw_bytes.decode(enc)
+            if _is_mostly_readable_text(candidate):
+                text = candidate
+                break
         except Exception:
             continue
-    else:
+
+    if not text:
+        # Check if utf-8 with errors='ignore' produces readable text
         try:
-            candidate = raw_bytes.decode('latin-1')
-            printable_ratio = sum(1 for ch in candidate if ch.isprintable() or ch in '\n\r\t') / max(1, len(candidate))
-            if printable_ratio > 0.85:
+            candidate = raw_bytes.decode('utf-8', errors='ignore')
+            if _is_mostly_readable_text(candidate):
                 text = candidate
-            else:
-                text = raw_bytes.decode('utf-8', errors='ignore')
         except Exception:
-            text = raw_bytes.decode('utf-8', errors='ignore')
+            pass
+
+    if not text:
+        return ''
 
     if ext == 'csv':
         try:

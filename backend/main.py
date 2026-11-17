@@ -177,6 +177,15 @@ def _resolve_documents(req: CompareRequest) -> List[dict]:
             text = str(doc.extracted_text)[:45000]
             sha_hash = hashlib.sha256(text.encode('utf-8', errors='ignore')).hexdigest()
             file_size = len(text)
+            # Validate readable content even if pre-extracted text was provided
+            post_rej = file_validation.validate_file_post_extract(doc.name, text.encode('utf-8', errors='ignore'), text)
+            if post_rej:
+                quarantined.append({
+                    'name': doc.name,
+                    'reason': post_rej.get('message') or post_rej.get('reason') or post_rej.get('why') or 'Content validation rejected',
+                    'details': post_rej,
+                })
+                continue
         else:
             raw_bytes = b''
             has_upload = (doc.content_base64 is not None) or bool(doc.s3_key)

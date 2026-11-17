@@ -71,7 +71,7 @@ Traditional diff tools only highlight textual fragments. ECHO provides deep sema
   "comparison_title": "Executive title of comparison",
   "comparison_mode": {
     "code": "MODE_A" | "MODE_B" | "MODE_C" | "MODE_D" | "MODE_E",
-    "name": "Version Comparison" | "Bulk Version Evolution" | "Cross-Document Comparison" | "Bulk Collection Analysis" | "Targeted Comparison",
+    "name": "Document Comparison" | "Bulk Version Evolution" | "Cross-Document Comparison" | "Bulk Collection Analysis" | "Targeted Comparison",
     "description": "Crisp 1-sentence mode rationale."
   },
   "overall_impact": "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "NO_MATERIAL_CHANGE",
@@ -335,16 +335,18 @@ def _detect_comparison_mode(docs: list, user_message: str, relationships: dict) 
 
     if n == 2:
         doc_types = [d.get('doc_type') for d in relationships.get('inventory', [])]
-        if len(set(doc_types)) > 1:
+        rels = relationships.get('relationships', [])
+        sim = rels[0].get('similarity', 1.0) if rels else 1.0
+        if len(set(doc_types)) > 1 or sim < 0.60:
             return {
                 'code': 'MODE_C',
                 'name': 'Cross-Document Comparison',
-                'description': 'Comparing distinct but related document types for alignment, contradictions, and governance gaps.',
+                'description': 'Comparing distinct documents for alignment, contractual differences, and governance gaps without assuming sequential versions.',
             }
         return {
             'code': 'MODE_A',
-            'name': 'Version Comparison',
-            'description': 'Direct bilateral version comparison tracking added, removed, and modified clauses.',
+            'name': 'Document Comparison',
+            'description': 'Direct comparison between two documents tracking added, removed, and modified clauses.',
         }
 
     if n >= 3 and (has_single_family or all_same_type):
