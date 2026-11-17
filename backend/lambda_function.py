@@ -47,6 +47,8 @@ class FileRejectedError(Exception):
         super().__init__(rejection.get('message', 'File not accepted'))
 
 
+import hashlib
+
 def _resolve_documents(body: dict) -> list:
     items = list(body.get('documents') or [])
     if not items and (body.get('file_name') or 'file_content_base64' in body or body.get('s3_key')):
@@ -54,18 +56,52 @@ def _resolve_documents(body: dict) -> list:
             'name': body.get('file_name') or 'document.txt',
             'content_base64': body.get('file_content_base64'),
             's3_key': body.get('s3_key'),
-            'version_label': 'File 1',
+            'version_label': 'Doc 1',
+        })
+
+    if len(items) > 25:
+        msg = (
+            f"File Not Accepted — Upload Limit Exceeded\n\n"
+            f"• Limit: Maximum 25 documents per comparison session\n"
+            f"• Uploaded: {len(items)} documents selected\n"
+            f"• Reason for Rejection: The comparison session allows up to 25 documents simultaneously to guarantee high-accuracy multi-document analysis.\n"
+            f"• How to Fix & Re-upload: Please select up to 25 documents to compare at a time."
+        )
+        raise FileRejectedError({
+            'rejected': True,
+            'reason_code': 'FILE_COUNT_LIMIT_EXCEEDED',
+            'title': 'Document Count Limit Exceeded',
+            'filename': f'{len(items)} documents selected',
+            'detected_type': 'Batch collection',
+            'size_bytes': 0,
+            'reason': f'Maximum limit is 25 documents per comparison session. You selected {len(items)} files.',
+            'reason_label': 'Upload Limit Exceeded',
+            'technical_detail': f'Session received {len(items)} documents. Maximum supported limit is 25 files.',
+            'how_to_fix': 'Please select up to 25 documents to compare at a time.',
+            'message': msg,
         })
 
     resolved = []
-    for idx, doc in enumerate(items[:2]):
+    # Support bulk collections of up to 25 documents in a single comparison session
+    for idx, doc in enumerate(items[:25]):
         if not isinstance(doc, dict):
             continue
         name = doc.get('name') or f'document_{idx + 1}.txt'
-        ver = doc.get('version_label') or ('File 1' if idx == 0 else 'File 2')
+        ver = doc.get('version_label')
+        if not ver or ver in ('File 1', 'File 2', '2 file', 'Document 1', 'Document 2'):
+            m_v = re.search(r'\b(?:v(?:er(?:sion)?)?|rev(?:ision)?)[._-]?(\d+(?:\.\d+)?)\b', name, re.I)
+            if m_v:
+                ver = f"v{m_v.group(1)}"
+            else:
+                ver = f"Doc {idx + 1}"
+
         text = ''
+        file_size = 0
+        sha_hash = ''
         if doc.get('extracted_text'):
             text = str(doc['extracted_text'])[:45000]
+            sha_hash = hashlib.sha256(text.encode('utf-8', errors='ignore')).hexdigest()
+            file_size = len(text)
         else:
             raw_bytes = b''
             has_upload = ('content_base64' in doc) or bool(doc.get('s3_key'))
@@ -76,6 +112,8 @@ def _resolve_documents(body: dict) -> list:
                 raw_bytes = _read_s3_bytes(doc['s3_key'])
             if not has_upload and not raw_bytes:
                 continue
+            file_size = len(raw_bytes)
+            sha_hash = hashlib.sha256(raw_bytes).hexdigest()
             pre_rej = file_validation.validate_file_pre_extract(name, raw_bytes)
             if pre_rej:
                 raise FileRejectedError(pre_rej)
@@ -87,6 +125,9 @@ def _resolve_documents(body: dict) -> list:
             'name': name,
             'version_label': ver,
             'text': text,
+            'file_size': file_size,
+            'sha256': sha_hash,
+            'word_count': len(re.findall(r'\b\w+\b', text)),
             'viewer_html': viewer_service.build_viewer_html(name, text, ver),
         })
     return resolved
@@ -160,7 +201,7 @@ def lambda_handler(event, context):
                 rej = rej_exc.rejection
                 return _json_response(200, {
                     'type': 'chat',
-                    'message': rej['message'],
+                    'message': rej.get('message') or rej.get('reason') or 'File rejected',
                     'rejected': True,
                     'rejection_details': rej,
                 })

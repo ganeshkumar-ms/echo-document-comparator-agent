@@ -2,10 +2,25 @@ import React, { Component, useEffect, useMemo, useRef, useState } from 'react'
 import EchoSidebar from './components/EchoSidebar'
 import EchoResultCard from './components/EchoResultCard'
 import DocumentViewer from './components/DocumentViewer'
+import BulkComparisonWorkspace from './components/BulkComparisonWorkspace'
 import { prepareAttachedDocument, sendEchoCompare } from './services/api'
 
 const STORAGE_KEY = 'echo_sessions_v1'
 const GREETING_RE = /^\s*(?:hi+|hello+|helo+|hey+|hola+|namaste|ji+|yo+|sup|thanks?|thank\s+you|ok(?:ay)?|cool|nice|great)\s*[!?.👋🙏]*\s*$/i
+
+function formatTimestamp(ts) {
+  if (!ts) return 'TODAY'
+  const d = new Date(ts)
+  if (isNaN(d.getTime())) return String(ts)
+  const now = new Date()
+  const diffDays = Math.floor((now - d) / 86400000)
+  if (diffDays === 0) {
+    return `TODAY · ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
+  } else if (diffDays === 1) {
+    return 'YESTERDAY'
+  }
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }).toUpperCase()
+}
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -38,7 +53,10 @@ function cleanFileTitle(name) {
 
 function deriveTitle(rawPrompt, docs) {
   if (Array.isArray(docs) && docs.length >= 2) {
-    return `${cleanFileTitle(docs[0].name)} vs ${cleanFileTitle(docs[1].name)}`.slice(0, 56)
+    if (docs.length === 2) {
+      return `${cleanFileTitle(docs[0].name)} vs ${cleanFileTitle(docs[1].name)}`.slice(0, 56)
+    }
+    return `Bulk Comparison (${docs.length} Documents)`.slice(0, 56)
   }
   if (Array.isArray(docs) && docs.length === 1) {
     return `${cleanFileTitle(docs[0].name)} Comparison`.slice(0, 56)
@@ -50,6 +68,14 @@ function deriveTitle(rawPrompt, docs) {
     .trim()
   const chosen = stripped || t
   return chosen.length > 48 ? `${chosen.slice(0, 45).trim()}...` : chosen
+}
+
+function deriveDocVersion(fileName, idx, total, priorDoc) {
+  const m = String(fileName || '').match(/\b(?:v(?:er(?:sion)?)?|rev(?:ision)?)[._-]?(\d+(?:\.\d+)?)\b/i)
+  if (m) return `v${m[1]}`
+  if (total === 1 && priorDoc) return 'Doc 2'
+  const num = (typeof idx === 'number' && !isNaN(idx)) ? idx + 1 : 1
+  return `Doc ${num}`
 }
 
 function getSmartPreview(messages) {
@@ -114,6 +140,7 @@ function loadSessions() {
         }
         return s
       })
+      .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))
   } catch {
     return []
   }
@@ -156,6 +183,8 @@ export default function App() {
   const [titleDraft, setTitleDraft] = useState('')
   const [viewerDocs, setViewerDocs] = useState(null)
   const [viewerIdx, setViewerIdx] = useState(0)
+  const [showBulkModal, setShowBulkModal] = useState(false)
+  const [fileLimitWarning, setFileLimitWarning] = useState('')
 
   const homeFileRef = useRef(null)
   const chatFileRef = useRef(null)
@@ -195,13 +224,28 @@ export default function App() {
     const picked = Array.from(fileList || []).filter(Boolean)
     if (!picked.length) return
     setAttachedFiles(prev => {
-      const merged = [...prev, ...picked].slice(0, 2)
-      return merged
+      if (prev.length + picked.length > 25) {
+        setFileLimitWarning('Maximum file limit reached: You can upload up to 25 documents in a single comparison session.')
+        setTimeout(() => setFileLimitWarning(''), 6000)
+        return [...prev, ...picked].slice(0, 25)
+      }
+      setFileLimitWarning('')
+      return [...prev, ...picked]
     })
   }
 
   function removeAttachedFile(index) {
     setAttachedFiles(prev => prev.filter((_, idx) => idx !== index))
+  }
+
+  function goHome() {
+    setDrawerOpen(false)
+    setViewerDocs(null)
+    setCurrentId(null)
+    setDraftMessages([])
+    setDraftTitle('New conversation')
+    setAttachedFiles([])
+    setView('home')
   }
 
   function openNewChat() {
@@ -269,17 +313,22 @@ export default function App() {
     setView('chat')
     setIsLoading(true)
 
-    const baseMessages = currentSession ? currentSession.messages : draftMessages
+    const isHomeStart = view === 'home' || !currentId
+    const baseMessages = (!isHomeStart && currentSession) ? currentSession.messages : []
     const priorFile1Doc = [...baseMessages]
       .reverse()
       .flatMap(m => m.docs || [])
       .find(d => d && (d.extractedText || d.s3Key))
 
-    const sessionId = currentId || `echo_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
+    const sessionId = (!isHomeStart && currentId) ? currentId : `echo_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
+    if (isHomeStart) {
+      setCurrentId(sessionId)
+    }
+
     const localDocMeta = files.map((f, idx) => ({
       name: f.name,
       size: formatSize(f.size),
-      versionLabel: files.length === 1 && priorFile1Doc ? 'File 2' : idx === 0 ? 'File 1' : 'File 2',
+      versionLabel: deriveDocVersion(f.name, idx, files.length, priorFile1Doc),
       blobUrl: URL.createObjectURL(f),
     }))
 
@@ -292,38 +341,30 @@ export default function App() {
 
     const nextMessages = [...baseMessages, userMsg]
     const initialTitle =
-      currentSession?.titleLocked
+      (!isHomeStart && currentSession?.titleLocked)
         ? currentSession.title
         : baseMessages.length === 0
           ? deriveTitle(text, localDocMeta)
           : currentSession?.title || draftTitle
 
-    if (!currentId) {
-      setCurrentId(sessionId)
-      setSessions(prev => [
-        {
-          id: sessionId,
-          title: initialTitle,
-          titleLocked: false,
-          updatedAt: Date.now(),
-          messages: nextMessages,
-        },
-        ...prev,
-      ])
-    } else {
-      setSessions(prev =>
-        prev.map(s =>
-          s.id === sessionId
-            ? { ...s, title: initialTitle, updatedAt: Date.now(), messages: nextMessages }
-            : s
-        )
-      )
-    }
+    setSessions(prev => {
+      const existing = prev.find(s => s.id === sessionId)
+      const updated = existing
+        ? { ...existing, title: initialTitle, updatedAt: Date.now(), messages: nextMessages }
+        : {
+            id: sessionId,
+            title: initialTitle,
+            titleLocked: false,
+            updatedAt: Date.now(),
+            messages: nextMessages,
+          }
+      return [updated, ...prev.filter(s => s.id !== sessionId)]
+    })
 
     try {
       const preparedDocs = await Promise.all(
         files.map((f, idx) =>
-          prepareAttachedDocument(f, files.length === 1 && priorFile1Doc ? 'File 2' : idx === 0 ? 'File 1' : 'File 2')
+          prepareAttachedDocument(f, deriveDocVersion(f.name, idx, files.length, priorFile1Doc))
         )
       )
 
@@ -332,7 +373,7 @@ export default function App() {
         apiDocuments = [
           {
             name: priorFile1Doc.name,
-            version_label: 'File 1',
+            version_label: priorFile1Doc.versionLabel || 'Doc 1',
             extracted_text: priorFile1Doc.extractedText,
             s3_key: priorFile1Doc.s3Key,
           },
@@ -342,7 +383,7 @@ export default function App() {
         apiDocuments = [
           {
             name: priorFile1Doc.name,
-            version_label: 'File 1',
+            version_label: priorFile1Doc.versionLabel || 'Doc 1',
             extracted_text: priorFile1Doc.extractedText,
             s3_key: priorFile1Doc.s3Key,
           },
@@ -377,7 +418,7 @@ export default function App() {
         ? matchedViewerDocs.map((vd, idx) => ({
             name: vd.name,
             size: localDocMeta[idx]?.size || '',
-            versionLabel: vd.version_label || localDocMeta[idx]?.versionLabel || (idx === 0 ? 'File 1' : 'File 2'),
+            versionLabel: vd.version_label || localDocMeta[idx]?.versionLabel || deriveDocVersion(vd.name, idx, matchedViewerDocs.length, priorFile1Doc),
             blobUrl: localDocMeta[idx]?.blobUrl,
             viewerHtml: vd.viewer_html,
             extractedText: vd.extracted_text,
@@ -392,40 +433,43 @@ export default function App() {
         structured: (res.type === 'comparison' || res.rejected || res.rejection_details) ? res : null,
       }
 
-      setSessions(prev =>
-        prev.map(s => {
-          if (s.id !== sessionId) return s
-          const updatedMsgs = s.messages.map(m =>
-            m.id === userMsg.id && resolvedViewerDocs.length > 0
-              ? { ...m, docs: resolvedViewerDocs }
-              : m
-          )
-          const finalMsgs = [...updatedMsgs, aiMsg]
-          const postTitle = s.titleLocked
-            ? s.title
-            : res.comparison_title ||
-              (s.title === 'New conversation' ? deriveTitle(text, resolvedViewerDocs) : s.title)
-          return {
-            ...s,
-            title: postTitle,
-            updatedAt: Date.now(),
-            messages: finalMsgs,
-          }
-        })
-      )
+      setSessions(prev => {
+        const target = prev.find(s => s.id === sessionId)
+        if (!target) return prev
+        const updatedMsgs = target.messages.map(m =>
+          m.id === userMsg.id && resolvedViewerDocs.length > 0
+            ? { ...m, docs: resolvedViewerDocs }
+            : m
+        )
+        const finalMsgs = [...updatedMsgs, aiMsg]
+        const postTitle = target.titleLocked
+          ? target.title
+          : res.comparison_title ||
+            (target.title === 'New conversation' ? deriveTitle(text, resolvedViewerDocs) : target.title)
+        const updated = {
+          ...target,
+          title: postTitle,
+          updatedAt: Date.now(),
+          messages: finalMsgs,
+        }
+        return [updated, ...prev.filter(s => s.id !== sessionId)]
+      })
     } catch (err) {
       const errMsg = {
         id: `a_${Date.now()}`,
         role: 'assistant',
         content: `Unable to complete comparison right now: ${err.message || 'Network error'}`,
       }
-      setSessions(prev =>
-        prev.map(s =>
-          s.id === sessionId
-            ? { ...s, updatedAt: Date.now(), messages: [...s.messages, errMsg] }
-            : s
-        )
-      )
+      setSessions(prev => {
+        const target = prev.find(s => s.id === sessionId)
+        if (!target) return prev
+        const updated = {
+          ...target,
+          updatedAt: Date.now(),
+          messages: [...target.messages, errMsg],
+        }
+        return [updated, ...prev.filter(s => s.id !== sessionId)]
+      })
     } finally {
       setIsLoading(false)
     }
@@ -447,7 +491,7 @@ export default function App() {
         {view === 'home' ? (
           <section id="home" className="homePage">
             <header>
-              <div className="word">ECHO</div>
+              <div className="word" onClick={goHome} style={{ cursor: 'pointer' }}>ECHO</div>
               <button className="enter" type="button" onClick={openNewChat}>
                 ENTER WORKSPACE ↗
               </button>
@@ -460,7 +504,7 @@ export default function App() {
                 <span>Know the impact.</span>
               </h1>
               <p className="sub">
-                Upload File 1 and File 2 (PDF, Word, Excel, CSV, JSON, XML, TXT) — or paste clauses below — to uncover changed deadlines, amounts, obligations, and why every difference matters.
+                Upload documents — or paste clauses below — to uncover changed deadlines, amounts, obligations, and why every difference matters.
               </p>
 
               <div className="promptGlow">
@@ -485,18 +529,29 @@ export default function App() {
                   <button
                     className="startAttach"
                     type="button"
-                    aria-label="Attach File 1 or File 2"
-                    title="Attach File 1 and File 2 (up to 2)"
+                    aria-label="Attach Documents"
+                    title="Attach Documents for comparison"
                     onClick={() => homeFileRef.current?.click()}
                   >
                     <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">
                       <path d="m21.4 11.6-8.9 8.9a6 6 0 0 1-8.5-8.5l9.3-9.3a4 4 0 0 1 5.7 5.7l-9.3 9.3a2 2 0 0 1-2.8-2.8l8.6-8.6" />
                     </svg>
                   </button>
+                  <button
+                    className="bulkPinBtn"
+                    type="button"
+                    aria-label="Bulk Document Comparison"
+                    title="Bulk Document Comparison Workspace (Upload multiple files, folders, or directory location)"
+                    onClick={() => setShowBulkModal(true)}
+                  >
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2">
+                      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                    </svg>
+                  </button>
                   <input
                     value={homeInput}
                     onChange={e => setHomeInput(e.target.value)}
-                    placeholder="Ask ECHO or compare File 1 & File 2..."
+                    placeholder="Ask ECHO or compare documents..."
                     aria-label="Start conversation"
                   />
                   <button className="send" type="submit" aria-label="Send">
@@ -508,12 +563,21 @@ export default function App() {
                 </form>
               </div>
 
+              {fileLimitWarning && (
+                <div style={{ display: 'flex', justifyContent: 'center', width: '100%', margin: '10px auto 0' }}>
+                  <div className="fileLimitAlert">
+                    <span>⚠️</span>
+                    <span>{fileLimitWarning}</span>
+                  </div>
+                </div>
+              )}
+
               {attachedFiles.length > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'center', width: '100%', margin: '12px auto 0' }}>
                   <div className="attachedRow">
                     {attachedFiles.map((f, idx) => (
                       <span key={`${f.name}-${idx}`} className="attachChip">
-                        <span className="attachVer">{idx === 0 ? 'File 1' : 'File 2'}</span>
+                        <span className="attachVer">{deriveDocVersion(f.name, idx, attachedFiles.length, null)}</span>
                         <span className="attachName">{f.name}</span>
                         <button
                           type="button"
@@ -525,31 +589,27 @@ export default function App() {
                         </button>
                       </span>
                     ))}
-                    {attachedFiles.length === 1 && (
-                      <button
-                        type="button"
-                        className="attachAddV2"
-                        onClick={() => homeFileRef.current?.click()}
-                      >
-                        + Attach File 2
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      className="attachAddV2"
+                      onClick={() => homeFileRef.current?.click()}
+                    >
+                      + Add Document
+                    </button>
                   </div>
                 </div>
               )}
 
               <div className="recentHead">
-                <b>Continue where you left off</b>
                 <span>RECENT CONVERSATIONS</span>
               </div>
 
               <div className="cards">
                 {sessions.length === 0 ? (
-                  <div className="emptyCard">
-                    <div className="emptyTitle">No conversations yet</div>
-                    <p className="emptyDesc">
-                      Attach File 1 &amp; File 2 above or compare two clauses inline to start your first semantic impact review.
-                    </p>
+                  <div className="card emptyCard">
+                    <small>READY TO COMPARE</small>
+                    <b>No previous conversations yet</b>
+                    <p>Attach documents or paste clauses above to analyze what changed and why it matters.</p>
                   </div>
                 ) : (
                   sessions.slice(0, 3).map(sess => (
@@ -559,8 +619,8 @@ export default function App() {
                       className="card"
                       onClick={() => loadSession(sess)}
                     >
-                      <small>{new Date(sess.updatedAt || Date.now()).toLocaleDateString()}</small>
-                      <b>{sess.title || 'Comparison session'}</b>
+                      <small>{formatTimestamp(sess.updatedAt || sess.createdAt)}</small>
+                      <b>{sess.title || 'New conversation'}</b>
                       <p>{getSmartPreview(sess.messages)}</p>
                     </button>
                   ))
@@ -614,7 +674,7 @@ export default function App() {
                         {activeTitle}
                       </button>
                     )}
-                    <small>DOCUMENT COMPARATOR · FILE 1 VS FILE 2 IMPACT</small>
+                    <small>DOCUMENT COMPARATOR · SEMANTIC IMPACT REVIEW</small>
                   </div>
 
                   <div className="mobileActions">
@@ -633,11 +693,7 @@ export default function App() {
                     <button
                       className="ghost"
                       type="button"
-                      onClick={() => {
-                        setDrawerOpen(false)
-                        setViewerDocs(null)
-                        setView('home')
-                      }}
+                      onClick={goHome}
                     >
                       <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="m3 10 9-7 9 7" />
@@ -652,9 +708,9 @@ export default function App() {
                 <div className="messages" ref={messagesRef} aria-live="polite">
                   {activeMessages.length === 0 && !isLoading && (
                     <div className="welcomeHint">
-                      <div className="welcomeTitle">Ready to Compare Files</div>
+                      <div className="welcomeTitle">Ready to Compare Documents</div>
                       <p>
-                        Attach <strong>File 1</strong> and <strong>File 2</strong> below (PDF, Word, Excel, CSV, JSON, XML, TXT) or paste clauses like <code>File 1: ... File 2: ...</code> to analyze what changed and why it matters.
+                        Attach documents below or paste clauses to analyze what changed and why it matters.
                       </p>
                     </div>
                   )}
@@ -716,12 +772,21 @@ export default function App() {
                 </div>
 
                 <div className="composerArea">
+                  {fileLimitWarning && (
+                    <div style={{ display: 'flex', justifyContent: 'center', width: '100%', margin: '0 auto 8px' }}>
+                      <div className="fileLimitAlert">
+                        <span>⚠️</span>
+                        <span>{fileLimitWarning}</span>
+                      </div>
+                    </div>
+                  )}
+
                   {attachedFiles.length > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'center', width: '100%', margin: '0 auto 10px' }}>
                       <div className="attachedRow composerAttached">
                         {attachedFiles.map((f, idx) => (
                           <span key={`${f.name}-${idx}`} className="attachChip">
-                            <span className="attachVer">{idx === 0 ? 'File 1' : 'File 2'}</span>
+                            <span className="attachVer">{deriveDocVersion(f.name, idx, attachedFiles.length, null)}</span>
                             <span className="attachName">{f.name}</span>
                             <button
                               type="button"
@@ -733,15 +798,13 @@ export default function App() {
                             </button>
                           </span>
                         ))}
-                        {attachedFiles.length === 1 && (
-                          <button
-                            type="button"
-                            className="attachAddV2"
-                            onClick={() => chatFileRef.current?.click()}
-                          >
-                            + Add File 2
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          className="attachAddV2"
+                          onClick={() => chatFileRef.current?.click()}
+                        >
+                          + Add Document
+                        </button>
                       </div>
                     </div>
                   )}
@@ -767,23 +830,30 @@ export default function App() {
                       <button
                         className="plus"
                         type="button"
-                        aria-label="Attach File 1 or File 2"
-                        title="Attach File 1 and File 2 (up to 2)"
+                        aria-label="Attach Documents"
+                        title="Attach Documents"
                         onClick={() => chatFileRef.current?.click()}
                       >
                         <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">
                           <path d="m21.4 11.6-8.9 8.9a6 6 0 0 1-8.5-8.5l9.3-9.3a4 4 0 0 1 5.7 5.7l-9.3 9.3a2 2 0 0 1-2.8-2.8l8.6-8.6" />
                         </svg>
                       </button>
+                      <button
+                        className="bulkPinBtn"
+                        type="button"
+                        aria-label="Bulk Document Comparison"
+                        title="Bulk Document Comparison Workspace (Upload multiple files, folders, or directory location)"
+                        onClick={() => setShowBulkModal(true)}
+                      >
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2">
+                          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                        </svg>
+                      </button>
                       <input
                         ref={chatInputRef}
                         value={chatInput}
                         onChange={e => setChatInput(e.target.value)}
-                        placeholder={
-                          attachedFiles.length === 1
-                            ? 'Optional note — or click + Add File 2 to compare...'
-                            : 'Ask ECHO or compare File 1 & File 2...'
-                        }
+                        placeholder="Ask ECHO or compare documents..."
                         maxLength={4000}
                         autoComplete="off"
                         aria-label="Message"
@@ -811,6 +881,21 @@ export default function App() {
               )}
             </div>
           </section>
+        )}
+
+        {/* BULK DOCUMENT COMPARISON MODAL WORKSPACE */}
+        {showBulkModal && (
+          <div className="srtModalBackdrop" onClick={() => setShowBulkModal(false)}>
+            <div className="srtModalCard bulkModalCard" onClick={e => e.stopPropagation()}>
+              <BulkComparisonWorkspace
+                onClose={() => setShowBulkModal(false)}
+                onRunComparison={({ files, title, instruction }) => {
+                  if (title) setDraftTitle(title)
+                  handleSend(instruction || 'Run bulk comparison across staged documents', files)
+                }}
+              />
+            </div>
+          </div>
         )}
       </div>
     </ErrorBoundary>

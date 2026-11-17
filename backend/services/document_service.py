@@ -4,35 +4,95 @@ import json
 import re
 import xml.etree.ElementTree as ET
 import zipfile
-import zlib
+from pathlib import Path
+
+
+def _is_mostly_readable_text(text: str) -> bool:
+    """Checks if extracted string is genuine readable human text vs random binary glyph stream."""
+    if not text or len(text.strip()) < 5:
+        return False
+    sample = text[:4000]
+    alpha_count = sum(1 for ch in sample if ch.isalpha())
+    space_count = sum(1 for ch in sample if ch.isspace())
+    total_len = len(sample)
+    if total_len == 0:
+        return False
+    # At least 45% should be letters or whitespace for normal text
+    ratio = (alpha_count + space_count) / total_len
+    # Also check average word length to avoid long unbroken symbol runs
+    words = sample.split()
+    if words:
+        avg_word_len = sum(len(w) for w in words) / len(words)
+        if avg_word_len > 35:
+            return False
+    return ratio >= 0.45 and alpha_count >= 10
 
 
 def _extract_pdf_text(raw_bytes: bytes) -> str:
-    """Pure-stdlib PDF text extractor handling uncompressed & FlateDecode streams."""
-    chunks = []
-    stream_pattern = re.compile(rb'stream\r?\n(.*?)endstream', re.S)
-    for match in stream_pattern.finditer(raw_bytes):
-        data = match.group(1).rstrip(b'\r\n')
-        try:
-            decoded = zlib.decompress(data)
-        except Exception:
-            decoded = data
-        text_str = decoded.decode('latin-1', errors='ignore')
-        for paren in re.findall(r'\(([^()]*)\)', text_str):
-            cleaned = paren.replace(r'\(', '(').replace(r'\)', ')').replace(r'\\', '\\').strip()
-            if cleaned and any(c.isalnum() for c in cleaned):
-                chunks.append(cleaned)
-    if not chunks:
-        raw_str = raw_bytes.decode('latin-1', errors='ignore')
-        for m in re.findall(r'\(([^()]{2,200})\)', raw_str):
-            cleaned = m.replace(r'\(', '(').replace(r'\)', ')').strip()
-            if cleaned and sum(c.isalnum() or c.isspace() for c in cleaned) >= len(cleaned) * 0.65:
-                if any(c.isalpha() for c in cleaned):
-                    chunks.append(cleaned)
-    return ' '.join(chunks).strip()
+    """Robust multi-engine PDF text extractor using pdfplumber and pypdfium2."""
+    # 1. Try pdfplumber
+    try:
+        import pdfplumber
+        with pdfplumber.open(io.BytesIO(raw_bytes)) as pdf:
+            pages_txt = []
+            for p in pdf.pages[:60]:
+                pt = (p.extract_text() or '').strip()
+                if pt:
+                    pages_txt.append(pt)
+            full = '\n\n'.join(pages_txt).strip()
+            if _is_mostly_readable_text(full):
+                return full
+    except Exception:
+        pass
+
+    # 2. Try pypdfium2
+    try:
+        import pypdfium2 as pdfium
+        pdf = pdfium.PdfDocument(raw_bytes)
+        pages_txt = []
+        for i in range(min(len(pdf), 60)):
+            page = pdf[i]
+            textpage = page.get_textpage()
+            txt = (textpage.get_text_range() or '').strip()
+            if txt:
+                pages_txt.append(txt)
+        full = '\n\n'.join(pages_txt).strip()
+        if _is_mostly_readable_text(full):
+            return full
+    except Exception:
+        pass
+
+    # 3. Try pdfminer
+    try:
+        from pdfminer.high_level import extract_text as pdfminer_extract
+        extracted = pdfminer_extract(io.BytesIO(raw_bytes)).strip()
+        if _is_mostly_readable_text(extracted):
+            return extracted
+    except Exception:
+        pass
+
+    return ''
 
 
 def _extract_docx_text(raw_bytes: bytes) -> str:
+    # 1. Try python-docx
+    try:
+        import docx
+        doc = docx.Document(io.BytesIO(raw_bytes))
+        parts = [p.text for p in doc.paragraphs if p.text.strip()]
+        for t in doc.tables:
+            for row in t.rows:
+                r_txt = [c.text.strip() for c in row.cells if c.text.strip()]
+                if r_txt:
+                    parts.append(' | '.join(r_txt))
+        if parts:
+            full = '\n\n'.join(parts).strip()
+            if _is_mostly_readable_text(full):
+                return full
+    except Exception:
+        pass
+
+    # 2. Pure-stdlib XML fallback
     try:
         with zipfile.ZipFile(io.BytesIO(raw_bytes)) as zf:
             parts = []
@@ -53,6 +113,28 @@ def _extract_docx_text(raw_bytes: bytes) -> str:
 
 
 def _extract_xlsx_text(raw_bytes: bytes) -> str:
+    # 1. Try openpyxl
+    try:
+        import openpyxl
+        wb = openpyxl.load_workbook(io.BytesIO(raw_bytes), data_only=True, read_only=True)
+        lines = []
+        for sname in wb.sheetnames[:10]:
+            sheet = wb[sname]
+            lines.append(f"Sheet: {sname}")
+            row_count = 0
+            for row in sheet.iter_rows(values_only=True):
+                vals = [str(v).strip() for v in row if v is not None and str(v).strip()]
+                if vals:
+                    lines.append(' | '.join(vals))
+                    row_count += 1
+                if row_count >= 150:
+                    break
+        if lines:
+            return '\n'.join(lines).strip()
+    except Exception:
+        pass
+
+    # 2. Pure-stdlib XML fallback
     try:
         with zipfile.ZipFile(io.BytesIO(raw_bytes)) as zf:
             shared = []
@@ -95,14 +177,35 @@ def extract_document_text(raw_bytes: bytes, file_name: str = 'document.txt') -> 
     if ext == 'xlsx':
         return _extract_xlsx_text(raw_bytes)[:45000]
 
-    text = raw_bytes.decode('utf-8', errors='replace')
+    for enc in ('utf-8', 'utf-8-sig', 'utf-16'):
+        try:
+            text = raw_bytes.decode(enc)
+            break
+        except Exception:
+            continue
+    else:
+        try:
+            candidate = raw_bytes.decode('latin-1')
+            printable_ratio = sum(1 for ch in candidate if ch.isprintable() or ch in '\n\r\t') / max(1, len(candidate))
+            if printable_ratio > 0.85:
+                text = candidate
+            else:
+                text = raw_bytes.decode('utf-8', errors='ignore')
+        except Exception:
+            text = raw_bytes.decode('utf-8', errors='ignore')
+
     if ext == 'csv':
-        reader = csv.reader(io.StringIO(text))
-        return '\n'.join(' | '.join(row) for row in list(reader)[:400]).strip()
+        try:
+            reader = csv.reader(io.StringIO(text))
+            return '\n'.join(' | '.join(row) for row in list(reader)[:400]).strip()
+        except Exception:
+            return text[:45000]
+
     if ext == 'json':
         try:
             parsed = json.loads(text)
             return json.dumps(parsed, indent=2)[:45000]
         except Exception:
             return text[:45000]
+
     return text.strip()[:45000]

@@ -425,7 +425,7 @@ def validate_file_post_extract(
     # Note: remove extraction banner lines when checking true extracted signal
     alnum_count = sum(1 for ch in text_str if ch.isalnum())
 
-    # 1. Explicit corrupted marker emitted by legacy extractors
+    # 1. Explicit corrupted marker or unreadable binary junk
     if text_str.startswith(('[Text extraction fallback', '[Extraction note for', '[Could not read')):
         return _build_rejection(
             reason_code='EXTRACTION_FAILED',
@@ -438,6 +438,27 @@ def validate_file_post_extract(
             how_to_fix='Ensure the file opens without a password or repair warning, re-save it as a standard .pdf (with selectable text), .docx, .xlsx, .csv, or .txt, and upload again.',
             policy=pol,
         )
+
+    # Check for unreadable binary / random glyph streams (e.g. damaged font streams)
+    if text_str and len(text_str) >= 20:
+        sample = text_str[:3000]
+        alpha_count = sum(1 for ch in sample if ch.isalpha())
+        space_count = sum(1 for ch in sample if ch.isspace())
+        ratio = (alpha_count + space_count) / max(1, len(sample))
+        words = sample.split()
+        avg_wlen = (sum(len(w) for w in words) / max(1, len(words))) if words else 0
+        if ratio < 0.45 or avg_wlen > 35:
+            return _build_rejection(
+                reason_code='UNREADABLE_BINARY_FILE',
+                title='Unable to Extract Readable Document Text',
+                filename=fname,
+                detected_type=detected_type,
+                size_bytes=size_bytes,
+                why=f"'{fname}' does not contain readable human language text. The extracted content is composed of binary symbols, font glyph streams, or damaged data.",
+                technical_detail=f"Character readability ratio={ratio:.2f}, average word length={avg_wlen:.1f} chars.",
+                how_to_fix='Ensure the document has readable text (not encrypted or corrupt) or export it as a standard PDF with selectable text.',
+                policy=pol,
+            )
 
     # 2. PDF post-extraction check (Encrypted vs Scanned Image-Only vs Blank)
     if ext == '.pdf':
