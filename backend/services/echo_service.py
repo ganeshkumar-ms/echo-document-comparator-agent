@@ -592,6 +592,31 @@ def _build_bulk_collection_comparison(docs: list, relationships: dict, mode: dic
     medium_count = sum(1 for c in all_changes if c['severity'] == 'MEDIUM')
     low_count = sum(1 for c in all_changes if c['severity'] in ('LOW', 'INFORMATIONAL'))
 
+    # Document Similarity Score & Overlap Tier
+    if n == 2 and len(sim_mat) >= 2 and len(sim_mat[0]) >= 2:
+        sim_val = round(sim_mat[0][1] * 100, 1)
+    elif sim_mat:
+        sim_vals = [sim_mat[i][j] for i in range(n) for j in range(i + 1, n)]
+        sim_val = round((sum(sim_vals) / len(sim_vals)) * 100, 1) if sim_vals else 100.0
+    else:
+        sim_val = 100.0
+
+    if sim_val >= 95.0:
+        sim_tier = "Near-Identical"
+        sim_tier_desc = "Substantially identical text with localized clause edits"
+    elif sim_val >= 75.0:
+        sim_tier = "High Overlap"
+        sim_tier_desc = "High degree of shared sections and aligned contractual wording"
+    elif sim_val >= 45.0:
+        sim_tier = "Moderate Overlap"
+        sim_tier_desc = "Partial overlap in structure and common terminology"
+    elif sim_val >= 20.0:
+        sim_tier = "Low Overlap"
+        sim_tier_desc = "Distinct content with minimal common phraseology"
+    else:
+        sim_tier = "Distinct Documents"
+        sim_tier_desc = "Independent files with negligible textual overlap"
+
     if critical_count > 0:
         overall_impact = 'CRITICAL'
     elif high_count > 0:
@@ -635,6 +660,9 @@ def _build_bulk_collection_comparison(docs: list, relationships: dict, mode: dic
         'file2_label': inventory[1]['name'] if n > 1 else 'Document 2',
         'comparison_mode': mode,
         'overall_impact': overall_impact,
+        'similarity_score': sim_val,
+        'similarity_label': sim_tier,
+        'similarity_description': sim_tier_desc,
         'impact_headline': headline,
         'summary': summary,
         'inventory': {

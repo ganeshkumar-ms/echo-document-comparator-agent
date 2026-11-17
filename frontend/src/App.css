@@ -4379,36 +4379,131 @@ html, body {
 }
 
 
+/* Document Similarity Indicator */
+.docSimilarityBar {
+  background: rgba(7, 140, 255, 0.06);
+  border: 1px solid rgba(7, 140, 255, 0.22);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 12px 0 14px 0;
+}
+
+.simBarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.simBarLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.simBadge {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  color: #38bdf8;
+  background: rgba(7, 140, 255, 0.15);
+  border: 1px solid rgba(7, 140, 255, 0.35);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.simScoreText {
+  font-size: 13px;
+  color: #f1f5f9;
+}
+
+.simScoreText strong {
+  font-size: 15px;
+  color: #38bdf8;
+  font-weight: 800;
+}
+
+.simTierPill {
+  font-size: 11px;
+  font-weight: 700;
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.simBarDesc {
+  font-size: 11.5px;
+  color: #94a3b8;
+}
+
+.simTrackWrap {
+  width: 100%;
+}
+
+.simTrackBar {
+  width: 100%;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.simTrackFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.simTierLabel {
+  font-weight: 500;
+  color: #94a3b8;
+  font-size: 11px;
+}
+
 /* RED COLOR STANDARD FOR ACTIVE HIGH / CRITICAL PILLS ACROSS ECHO */
-.sevFilterBtn.high {
+.sevFilterBtn {
   background: transparent !important;
-  border: none !important;
-  color: #94a3b8 !important;
+  border: 1px solid transparent !important;
   outline: none !important;
   box-shadow: none !important;
 }
 
-.sevFilterBtn.high:hover {
+.sevFilterBtn:hover {
   color: #ffffff !important;
   background: rgba(255, 255, 255, 0.05) !important;
-  border: none !important;
-  outline: none !important;
+  border: 1px solid transparent !important;
 }
 
-.sevFilterBtn.high:focus,
-.sevFilterBtn.high:focus-visible {
-  outline: none !important;
-  border: none !important;
-  box-shadow: none !important;
+.sevFilterBtn.active {
+  background: rgba(7, 140, 255, 0.25) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(7, 140, 255, 0.45) !important;
 }
 
-.sevFilterBtn.active.high,
+.sevFilterBtn.active.critical {
+  background: rgba(244, 63, 94, 0.2) !important;
+  color: #fda4af !important;
+  border: 1px solid rgba(244, 63, 94, 0.75) !important;
+  box-shadow: 0 0 8px rgba(244, 63, 94, 0.3) !important;
+}
+
+.sevFilterBtn.active.high {
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #fca5a5 !important;
+  border: 1px solid rgba(239, 68, 68, 0.75) !important;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.3) !important;
+}
+
 .sevHigh,
 .impactHigh,
 .diffSevBadge.sevHigh,
 .sevPillSmall.sevHigh,
-.cellHigh,
-[data-severity="HIGH"] {
+.cellHigh {
   background: rgba(239, 68, 68, 0.25) !important;
   border: 1px solid rgba(239, 68, 68, 0.85) !important;
   color: #f87171 !important;

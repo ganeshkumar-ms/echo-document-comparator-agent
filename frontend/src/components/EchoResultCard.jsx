@@ -238,6 +238,34 @@ export default function EchoResultCard({ data, guardrails: propGuardrails }) {
   const evolution = data.evolution_timeline || []
   const matrix = data.comparison_matrix || { headers: [], rows: [] }
 
+  // Document Similarity calculation
+  const simRelationships = (data.relationship_intelligence && data.relationship_intelligence.relationships) || []
+  const firstRelSim = simRelationships[0] && typeof simRelationships[0].similarity === 'number'
+    ? Math.round(simRelationships[0].similarity * 100)
+    : null
+  const matrixFirstSim = matrix.rows && matrix.rows[0] && matrix.rows[0].cells && matrix.rows[0].cells[1]
+    ? matrix.rows[0].cells[1].similarity_pct
+    : null
+
+  const similarityScore = typeof data.similarity_score === 'number'
+    ? Math.round(data.similarity_score)
+    : (firstRelSim !== null ? firstRelSim : (matrixFirstSim !== null ? matrixFirstSim : (changes.length === 0 ? 100 : Math.max(15, Math.round(100 - (changes.length * 4))))))
+
+  const similarityTier = data.similarity_label || (
+    similarityScore >= 95 ? 'Near-Identical' :
+    similarityScore >= 75 ? 'High Overlap' :
+    similarityScore >= 45 ? 'Moderate Overlap' :
+    similarityScore >= 20 ? 'Low Overlap' : 'Distinct Documents'
+  )
+
+  const similarityDesc = data.similarity_description || (
+    similarityScore >= 95 ? 'Substantially identical text with localized clause edits' :
+    similarityScore >= 75 ? 'High degree of shared sections and aligned contractual wording' :
+    similarityScore >= 45 ? 'Partial overlap in structure and common terminology' :
+    similarityScore >= 20 ? 'Distinct content with minimal common phraseology' :
+    'Independent files with negligible textual overlap'
+  )
+
   const selectedLeftDoc = docList[leftDocIdx] || docList[0] || { name: data.v1_label || 'Document 1', version_label: data.v1_label || 'Doc 1' }
   const selectedRightDoc = docList[rightDocIdx] || docList[1] || docList[0] || { name: data.v2_label || 'Document 2', version_label: data.v2_label || 'Doc 2' }
 
@@ -399,6 +427,16 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
 
       {/* 2. EXECUTIVE METRICS STRIP */}
       <div className="metricsStrip" aria-label="Comparison metrics">
+        <span className="metricItem" title={similarityDesc}>
+          <i
+            className="metricDot"
+            style={{
+              background: similarityScore >= 75 ? '#34d399' : similarityScore >= 45 ? '#38bdf8' : similarityScore >= 20 ? '#facc15' : '#94a3b8'
+            }}
+          />
+          <strong>{similarityScore}%</strong> Similarity <span className="simTierLabel">({similarityTier})</span>
+        </span>
+        <span className="metricSep">|</span>
         <span className="metricItem">
           <i className="metricDot dotAlert" />
           <strong>{m.total_changes ?? changes.length}</strong> Changes
@@ -446,6 +484,33 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
       {data.summary && (
         <p className="echoSummary">{data.summary}</p>
       )}
+
+      {/* 3.1 DOCUMENT SIMILARITY OVERVIEW BAR */}
+      <div className="docSimilarityBar">
+        <div className="simBarHeader">
+          <div className="simBarLeft">
+            <span className="simBadge">DOCUMENT SIMILARITY</span>
+            <span className="simScoreText"><strong>{similarityScore}%</strong> Match</span>
+            <span className="simTierPill">{similarityTier}</span>
+          </div>
+          <span className="simBarDesc">{similarityDesc}</span>
+        </div>
+        <div className="simTrackWrap">
+          <div className="simTrackBar">
+            <div
+              className="simTrackFill"
+              style={{
+                width: `${Math.min(100, Math.max(3, similarityScore))}%`,
+                background: similarityScore >= 75
+                  ? 'linear-gradient(90deg, #0284c7, #10b981)'
+                  : similarityScore >= 45
+                  ? 'linear-gradient(90deg, #0284c7, #38bdf8)'
+                  : 'linear-gradient(90deg, #475569, #94a3b8)'
+              }}
+            />
+          </div>
+        </div>
+      </div>
 
       {/* COMPACT AUDIT & EXPORT BAR (PLACED BEFORE SLIDES) */}
       <div className="compactAuditBar">
@@ -584,7 +649,7 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
                 <button
                   key={lvl}
                   type="button"
-                  className={`sevFilterBtn ${sevFilter === lvl ? 'active' : ''} ${lvl.toLowerCase()}`}
+                  className={`sevFilterBtn ${sevFilter === lvl ? `active ${lvl.toLowerCase()}` : ''}`}
                   onClick={() => setSevFilter(lvl)}
                 >
                   {lvl}
@@ -801,7 +866,7 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
                 <button
                   key={lvl}
                   type="button"
-                  className={`sevFilterBtn ${sevFilter === lvl ? 'active' : ''} ${lvl.toLowerCase()}`}
+                  className={`sevFilterBtn ${sevFilter === lvl ? `active ${lvl.toLowerCase()}` : ''}`}
                   onClick={() => setSevFilter(lvl)}
                 >
                   {lvl}
