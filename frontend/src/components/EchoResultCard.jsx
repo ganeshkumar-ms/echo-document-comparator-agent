@@ -427,16 +427,6 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
 
       {/* 2. EXECUTIVE METRICS STRIP */}
       <div className="metricsStrip" aria-label="Comparison metrics">
-        <span className="metricItem" title={similarityDesc}>
-          <i
-            className="metricDot"
-            style={{
-              background: similarityScore >= 75 ? '#34d399' : similarityScore >= 45 ? '#38bdf8' : similarityScore >= 20 ? '#facc15' : '#94a3b8'
-            }}
-          />
-          <strong>{similarityScore}%</strong> Similarity <span className="simTierLabel">({similarityTier})</span>
-        </span>
-        <span className="metricSep">|</span>
         <span className="metricItem">
           <i className="metricDot dotAlert" />
           <strong>{m.total_changes ?? changes.length}</strong> Changes
