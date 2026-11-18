@@ -65,7 +65,7 @@ export default function DocumentViewer({ docs, activeIndex, onSelectIndex, onClo
               className={`docTab${idx === activeIndex ? ' active' : ''}`}
               onClick={() => onSelectIndex(idx)}
             >
-              {d.versionLabel || `File ${idx + 1}`}: {d.name}
+              {d.versionLabel || `Doc ${idx + 1}`}: {d.name}
             </button>
           ))}
         </div>

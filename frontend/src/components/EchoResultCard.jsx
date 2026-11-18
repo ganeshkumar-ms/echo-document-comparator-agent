@@ -434,10 +434,10 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
         <span className="metricSep">|</span>
         <span className="metricItem">
           <i className="metricDot dotCrimson" />
-          <strong style={{ color: (m.critical_impact || 0) > 0 ? '#f43f5e' : (m.high_impact || 0) > 0 ? '#f59e0b' : 'inherit' }}>
+          <strong style={{ color: (m.critical_impact || 0) > 0 ? '#f43f5e' : (m.high_impact || 0) > 0 ? '#ef4444' : 'inherit' }}>
             {(m.critical_impact || 0) + (m.high_impact || 0)}
           </strong>{' '}
-          <span style={{ color: (m.critical_impact || 0) > 0 ? '#fda4af' : (m.high_impact || 0) > 0 ? '#fbbf24' : 'inherit' }}>
+          <span style={{ color: (m.critical_impact || 0) > 0 ? '#fda4af' : (m.high_impact || 0) > 0 ? '#f87171' : 'inherit' }}>
             Critical &amp; High
           </span>
         </span>
@@ -500,11 +500,6 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
             />
           </div>
         </div>
-        {similarityScore < 35 && (
-          <div className="simLowAlert" style={{ marginTop: 10, padding: '8px 12px', background: 'rgba(7, 140, 255, 0.08)', border: '1px solid rgba(7, 140, 255, 0.25)', borderRadius: 8, fontSize: 12, color: '#94a3b8', lineHeight: 1.5 }}>
-            <strong style={{ color: '#38bdf8' }}>Distinct Document Structures:</strong> The compared files represent different document types or non-sequential drafts. Echo displays side-by-side comparative differences directly without assuming a baseline or revised sequence.
-          </div>
-        )}
       </div>
 
       {/* COMPACT AUDIT & EXPORT BAR (PLACED BEFORE SLIDES) */}
@@ -713,34 +708,34 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
 
                     {/* Comparative Panels (Document 1 vs Document 2) */}
                     <div className="diffComparisonGrid">
-                      <div className="diffSidePanel diffDoc1Panel">
+                      <div className="diffSidePanel diffBeforePanel">
                         <div className="diffPanelHeader">
-                          <span className="diffTagDoc1">{selectedLeftDoc.name ? (selectedLeftDoc.name.length > 22 ? selectedLeftDoc.name.slice(0, 20) + '...' : selectedLeftDoc.name) : 'DOCUMENT 1'}</span>
+                          <span className="diffTagBefore">{selectedLeftDoc.version_label || 'DOCUMENT 1'}</span>
                           <span className="diffDocLabel" title={selectedLeftDoc.name}>
                             {selectedLeftDoc.name || 'Document 1'}
                           </span>
                         </div>
                         <div className="diffPanelContent">
                           {hasPrev ? (
-                            <p className="diffText doc1Text">{cleanExcerpt(c.previous_text)}</p>
+                            <p className="diffText beforeText">{cleanExcerpt(c.previous_text)}</p>
                           ) : (
-                            <p className="diffTextEmpty">[Not present in {selectedLeftDoc.name || 'Document 1'}]</p>
+                            <p className="diffTextEmpty">[Not present in {selectedLeftDoc.version_label || selectedLeftDoc.name || 'Document 1'}]</p>
                           )}
                         </div>
                       </div>
 
-                      <div className="diffSidePanel diffDoc2Panel">
+                      <div className="diffSidePanel diffAfterPanel">
                         <div className="diffPanelHeader">
-                          <span className="diffTagDoc2">{selectedRightDoc.name ? (selectedRightDoc.name.length > 22 ? selectedRightDoc.name.slice(0, 20) + '...' : selectedRightDoc.name) : 'DOCUMENT 2'}</span>
+                          <span className="diffTagAfter">{selectedRightDoc.version_label || 'DOCUMENT 2'}</span>
                           <span className="diffDocLabel" title={selectedRightDoc.name}>
                             {selectedRightDoc.name || 'Document 2'}
                           </span>
                         </div>
                         <div className="diffPanelContent">
                           {hasNew ? (
-                            <p className="diffText doc2Text">{cleanExcerpt(c.new_text)}</p>
+                            <p className="diffText afterText">{cleanExcerpt(c.new_text)}</p>
                           ) : (
-                            <p className="diffTextEmpty removed">[Not present in {selectedRightDoc.name || 'Document 2'}]</p>
+                            <p className="diffTextEmpty removed">[Not present in {selectedRightDoc.version_label || selectedRightDoc.name || 'Document 2'}]</p>
                           )}
                         </div>
                       </div>
@@ -1110,7 +1105,7 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
                       {step.high_count > 0 && (
                         <>
                           <span>·</span>
-                          <span style={{ color: '#fbbf24' }}><strong>{step.high_count}</strong> high</span>
+                          <span style={{ color: '#f87171' }}><strong>{step.high_count}</strong> high</span>
                         </>
                       )}
                     </div>

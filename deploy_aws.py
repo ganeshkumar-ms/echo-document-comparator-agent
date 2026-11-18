@@ -151,6 +151,19 @@ def build_lambda_zip() -> bytes:
                 full_path = Path(root) / f
                 rel_path = full_path.relative_to(backend_dir).as_posix()
                 z.write(full_path, rel_path)
+        site_pkgs = BASE_DIR.parent / 'taxora-taxonomy-agent' / 'backend' / 'venv' / 'Lib' / 'site-packages'
+        for pkg_name in ('pdfminer', 'charset_normalizer'):
+            pkg_dir = site_pkgs / pkg_name
+            if pkg_dir.exists():
+                for root, _, files in os.walk(pkg_dir):
+                    if '__pycache__' in root:
+                        continue
+                    for f in files:
+                        if f.endswith('.pyc') or f.endswith('.pyd'):
+                            continue
+                        full_path = Path(root) / f
+                        rel_path = f'{pkg_name}/' + full_path.relative_to(pkg_dir).as_posix()
+                        z.write(full_path, rel_path)
     return buf.getvalue()
 
 
@@ -171,7 +184,7 @@ def step3_lambda(role_arn: str) -> str:
         lam.update_function_configuration(
             FunctionName=LAMBDA_NAME,
             Timeout=120,
-            MemorySize=512,
+            MemorySize=1024,
             Environment=env_vars,
         )
         waiter.wait(FunctionName=LAMBDA_NAME)

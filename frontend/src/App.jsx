@@ -73,9 +73,6 @@ function deriveTitle(rawPrompt, docs) {
 function deriveDocVersion(fileName, idx, total, priorDoc) {
   const m = String(fileName || '').match(/\b(?:v(?:er(?:sion)?)?|rev(?:ision)?)[._-]?(\d+(?:\.\d+)?)\b/i)
   if (m) return `v${m[1]}`
-  if (total === 1 && priorDoc) return 'File 2'
-  if (total <= 2) return idx === 0 ? 'File 1' : 'File 2'
-  return `Doc ${idx + 1}`
   if (total === 1 && priorDoc) return 'Doc 2'
   const num = (typeof idx === 'number' && !isNaN(idx)) ? idx + 1 : 1
   return `Doc ${num}`
@@ -293,8 +290,9 @@ export default function App() {
       setCurrentId(null)
       setDraftMessages([])
       setDraftTitle('New conversation')
+      setAttachedFiles([])
       setViewerDocs(null)
-      setView('home')
+      setView('chat')
     }
   }
 
@@ -382,6 +380,27 @@ export default function App() {
           },
           preparedDocs[0],
         ]
+      } else if (preparedDocs.length === 0 && /\b(retry|try again|re-?compare|re-?analyze|redo|more specific|be more specific|more detail|deeper)\b/i.test(text)) {
+        const lastMultiUser = [...baseMessages].reverse().find(m => m.role === 'user' && Array.isArray(m.docs) && m.docs.some(d => d.extractedText || d.s3Key))
+        if (lastMultiUser) {
+          apiDocuments = lastMultiUser.docs
+            .filter(d => d.extractedText || d.s3Key)
+            .map(d => ({
+              name: d.name,
+              version_label: d.versionLabel || 'Doc',
+              extracted_text: d.extractedText || '',
+              s3_key: d.s3Key || '',
+            }))
+        } else if (priorFile1Doc && text.length > 20) {
+          apiDocuments = [
+            {
+              name: priorFile1Doc.name,
+              version_label: priorFile1Doc.versionLabel || 'Doc 1',
+              extracted_text: priorFile1Doc.extractedText,
+              s3_key: priorFile1Doc.s3Key,
+            },
+          ]
+        }
       } else if (preparedDocs.length === 0 && priorFile1Doc && text.length > 20) {
         apiDocuments = [
           {
@@ -397,7 +416,20 @@ export default function App() {
         role: m.role,
         content:
           m.role === 'assistant'
-            ? m.structured?.summary || m.structured?.impact_headline || m.content || ''
+            ? (m.structured
+                ? JSON.stringify({
+                    title: m.structured.comparison_title,
+                    summary: m.structured.summary,
+                    verdict: m.structured.executive_verdict,
+                    impact_headline: m.structured.impact_headline,
+                    changes: (m.structured.changes || []).slice(0, 10).map(c => ({
+                      severity: c.severity,
+                      type: c.change_type,
+                      title: c.title,
+                      impact: c.business_impact,
+                    })),
+                  }).slice(0, 2400)
+                : m.content || '')
             : m.docs?.length
               ? `${m.content ? m.content + '\n' : ''}[Attached: ${m.docs.map(d => `${d.versionLabel || 'DOC'} ${d.name}`).join(', ')}]`
               : m.content || '',
@@ -731,7 +763,7 @@ export default function App() {
                           <div className="userDocs">
                             {msg.docs.map((doc, dIdx) => (
                               <div key={`${doc.name}-${dIdx}`} className="docPill">
-                                <span className="docVerTag">{doc.versionLabel || `File ${dIdx + 1}`}</span>
+                                <span className="docVerTag">{doc.versionLabel || `Doc ${dIdx + 1}`}</span>
                                 <span className="docPillName">{doc.name}</span>
                                 {doc.size && <span className="docPillSize">{doc.size}</span>}
                                 <button

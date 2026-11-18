@@ -8,6 +8,7 @@ import re
 import uuid
 from pathlib import Path
 import boto3
+from botocore.config import Config
 from services import guardrail_service
 
 try:
@@ -22,11 +23,12 @@ def get_bedrock_client():
     return boto3.client(
         'bedrock-runtime',
         region_name=os.getenv('AWS_DEFAULT_REGION') or os.getenv('AWS_REGION') or 'us-east-1',
+        config=Config(read_timeout=11, connect_timeout=3, retries={'max_attempts': 1}),
     )
 
 
-MODEL_ID = 'us.amazon.nova-pro-v1:0'
-FALLBACK_MODEL_ID = 'us.anthropic.claude-3-haiku-20240307-v1:0'
+MODEL_ID = 'us.amazon.nova-lite-v1:0'
+FALLBACK_MODEL_ID = 'us.amazon.nova-pro-v1:0'
 
 CHANGE_TYPES = [
     'Added',
@@ -60,8 +62,9 @@ Traditional diff tools only highlight textual fragments. ECHO provides deep sema
 
 === MODES OF OPERATION ===
 1. CONVERSATIONAL ASSISTANCE (type: "chat")
-   - For greetings ("hi", "hello"), general questions about ECHO, or when only 1 file is attached without comparison context.
-   - Respond with JSON: {"type": "chat", "message": "<helpful answer>"}
+   - For greetings ("hi", "hello"), general questions about ECHO's document comparison, semantic diff, materiality levels, or version evolution capabilities, OR follow-up / "tell extra" / "more specific" / "retry" questions about a prior comparison (using conversation history).
+   - Provide a thorough, specific, well-structured plain-text answer grounded in the prior comparison details (if available) or ECHO's comparison expertise.
+   - Respond with JSON: {"type": "chat", "message": "<helpful, detailed answer>"}
 
 2. BULK / VERSION COMPARISON (type: "comparison")
    - When 2 or more files are provided, or multiple versions/clauses are compared.
@@ -549,7 +552,7 @@ def _build_bulk_collection_comparison(docs: list, relationships: dict, mode: dic
         crit_count = sum(1 for c in ver_changes if c['severity'] == 'CRITICAL')
         high_count = sum(1 for c in ver_changes if c['severity'] == 'HIGH')
 
-        role_str = f"Document {idx + 1}"
+        role_str = "Baseline Version" if idx == 0 else f"Revision {idx}" if idx < n - 1 else "Current Latest Version"
         evolution_timeline.append({
             'index': idx,
             'version': inv['version_label'],
@@ -735,8 +738,8 @@ def _enrich_bedrock_comparison(parsed: dict, fallback_comp: dict) -> dict:
                 'severity': sev,
                 'impact_category': str(item.get('impact_category') or 'Operational & SLA Impact').strip(),
                 'section_or_topic': str(item.get('section_or_topic') or f"Section {idx + 1}").strip(),
-                'previous_text': str(item.get('previous_text') or 'Not present in Document 1').strip(),
-                'new_text': str(item.get('new_text') or 'Not present in Document 2').strip(),
+                'previous_text': str(item.get('previous_text') or 'Not present in prior version').strip(),
+                'new_text': str(item.get('new_text') or 'Removed in revised version').strip(),
                 'what_changed': str(item.get('what_changed') or 'Clause updated.').strip(),
                 'why_it_matters': str(item.get('why_it_matters') or 'Alters obligations or terms.').strip(),
                 'who_is_affected': item.get('who_is_affected') or ['Customers', 'Operations'],
@@ -767,7 +770,7 @@ def _invoke_bedrock(client, model_id: str, messages: list) -> str:
         modelId=model_id,
         system=[{'text': ECHO_SYSTEM_PROMPT}],
         messages=messages,
-        inferenceConfig={'maxTokens': 2800, 'temperature': 0.15},
+        inferenceConfig={'maxTokens': 1800, 'temperature': 0.15},
     )
     parts = response.get('output', {}).get('message', {}).get('content', [])
     return ''.join(p.get('text', '') for p in parts if isinstance(p, dict))
@@ -836,7 +839,7 @@ def compare_or_chat(
         ]
         for idx, d in enumerate(docs[:6]):
             inv = relationships['inventory'][idx]
-            prompt_parts.append(f"=== DOCUMENT {idx + 1}: {inv['name']} ({inv['version_label']}, {inv['doc_type']}) ===\n{d['text'][:14000]}\n\n")
+            prompt_parts.append(f"=== DOCUMENT {idx + 1}: {inv['name']} ({inv['version_label']}, {inv['doc_type']}) ===\n{d['text'][:6000]}\n\n")
 
         combined_user_text = ''.join(prompt_parts)
         bedrock_messages = []
@@ -846,7 +849,11 @@ def compare_or_chat(
 
         raw_output = None
         client = get_bedrock_client()
+        import time as _time
+        t0 = _time.time()
         for mid in (MODEL_ID, FALLBACK_MODEL_ID):
+            if _time.time() - t0 > 8:
+                break
             try:
                 raw_output = _invoke_bedrock(client, mid, bedrock_messages)
                 if raw_output:
@@ -906,6 +913,35 @@ def compare_or_chat(
             except Exception:
                 pass
             return {'type': 'chat', 'message': raw_output.strip()[:2500]}
+
+    if clean_msg:
+        bedrock_messages = []
+        for m in safe_history:
+            bedrock_messages.append({'role': m['role'], 'content': [{'text': m['content']}]})
+        bedrock_messages.append({'role': 'user', 'content': [{'text': clean_msg}]})
+
+        client = get_bedrock_client()
+        raw_output = None
+        for mid in (MODEL_ID, FALLBACK_MODEL_ID):
+            try:
+                raw_output = _invoke_bedrock(client, mid, bedrock_messages)
+                if raw_output:
+                    break
+            except Exception:
+                continue
+
+        if raw_output:
+            try:
+                parsed = json.loads(_strip_json_fences(raw_output))
+                if isinstance(parsed, dict) and parsed.get('type') == 'comparison' and 'changes' in parsed:
+                    parsed['trace_id'] = f"ECH-{datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
+                    parsed['guardrails'] = {"status": "PASSED"}
+                    return parsed
+                if isinstance(parsed, dict) and parsed.get('message'):
+                    return {'type': 'chat', 'message': str(parsed.get('message', '')).strip()}
+            except Exception:
+                pass
+            return {'type': 'chat', 'message': raw_output.strip()[:3000]}
 
     return {
         'type': 'chat',

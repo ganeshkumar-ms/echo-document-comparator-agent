@@ -1,10 +1,36 @@
 import csv
 import io
 import json
+import os
 import re
+import sys
+import types
 import xml.etree.ElementTree as ET
 import zipfile
+import zlib
 from pathlib import Path
+
+
+def _ensure_pdfminer_ready():
+    """Allows pure-Python pdfminer to import on AWS Lambda without C-extension cryptography."""
+    try:
+        import cryptography  # noqa: F401
+    except Exception:
+        m = types.ModuleType('cryptography')
+        m.default_backend = lambda: None
+        m.Cipher = None
+        m.algorithms = None
+        m.modes = None
+        for mod_name in (
+            'cryptography',
+            'cryptography.hazmat',
+            'cryptography.hazmat.backends',
+            'cryptography.hazmat.primitives',
+            'cryptography.hazmat.primitives.ciphers',
+            'cryptography.hazmat.primitives.ciphers.algorithms',
+            'cryptography.hazmat.primitives.ciphers.modes',
+        ):
+            sys.modules[mod_name] = m
 
 
 def _is_mostly_readable_text(text: str) -> bool:
@@ -64,12 +90,73 @@ def _extract_pdf_text(raw_bytes: bytes) -> str:
 
     # 3. Try pdfminer
     try:
+        _ensure_pdfminer_ready()
         from pdfminer.high_level import extract_text as pdfminer_extract
         extracted = pdfminer_extract(io.BytesIO(raw_bytes)).strip()
         if _is_mostly_readable_text(extracted):
             return extracted
     except Exception:
         pass
+
+    # 4. Pure-stdlib FlateDecode / PDF text-stream fallback (works on AWS Lambda with zero external deps)
+    try:
+        chunks = []
+        for m in re.finditer(rb'stream[\r\n]+(.*?)endstream', raw_bytes, re.DOTALL):
+            stream_data = m.group(1)
+            try:
+                decoded = zlib.decompress(stream_data)
+            except Exception:
+                decoded = stream_data
+            text_ops = re.findall(rb'\(([^()\\]*(?:\\.[^()\\]*)*)\)\s*Tj', decoded)
+            arr_ops = re.findall(rb'\[(.*?)\]\s*TJ', decoded, re.DOTALL)
+            for t in text_ops:
+                s = t.decode('latin-1', errors='ignore').replace(r'\(', '(').replace(r'\)', ')').replace(r'\\', '\\')
+                if s.strip():
+                    chunks.append(s)
+            for arr in arr_ops:
+                parts = re.findall(rb'\(([^()\\]*(?:\\.[^()\\]*)*)\)', arr)
+                joined = ''.join(
+                    p.decode('latin-1', errors='ignore').replace(r'\(', '(').replace(r'\)', ')').replace(r'\\', '\\')
+                    for p in parts
+                )
+                if joined.strip():
+                    chunks.append(joined)
+        stdlib_text = re.sub(r'\s+', ' ', ' '.join(chunks)).strip()
+        if _is_mostly_readable_text(stdlib_text):
+            return stdlib_text
+    except Exception:
+        pass
+
+    # 5. Amazon Bedrock Nova Lite native PDF extraction fallback (fast on AWS Lambda for <= 4.5 MB PDFs)
+    if 0 < len(raw_bytes) <= 4_500_000:
+        try:
+            import boto3
+            from botocore.config import Config
+            region = os.getenv('AWS_DEFAULT_REGION') or os.getenv('AWS_REGION') or 'us-east-1'
+            br = boto3.client(
+                'bedrock-runtime',
+                region_name=region,
+                config=Config(read_timeout=20, connect_timeout=3, retries={'max_attempts': 1}),
+            )
+            res = br.converse(
+                modelId='us.amazon.nova-lite-v1:0',
+                messages=[{
+                    'role': 'user',
+                    'content': [
+                        {'document': {'format': 'pdf', 'name': 'uploaded_document', 'source': {'bytes': raw_bytes}}},
+                        {'text': (
+                            'Transcribe ALL readable text, headings, sections, tables, figures, and clauses across every page of this PDF verbatim. '
+                            'Preserve exact wording, numbers, dates, and structure.'
+                        )}
+                    ]
+                }],
+                inferenceConfig={'maxTokens': 2200, 'temperature': 0.0}
+            )
+            bedrock_text = res['output']['message']['content'][0]['text'].strip()
+            if _is_mostly_readable_text(bedrock_text):
+                return bedrock_text
+        except Exception:
+            pass
 
     return ''
 

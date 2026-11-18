@@ -2335,10 +2335,24 @@ html, body {
 }
 
 .sevFilterBtn.active.high {
-  background: rgba(245, 158, 11, 0.22) !important;
-  color: #fbbf24 !important;
-  border: 1px solid rgba(245, 158, 11, 0.85) !important;
-  box-shadow: 0 0 8px rgba(245, 158, 11, 0.35) !important;
+  background: rgba(249, 115, 22, 0.22) !important;
+  color: #fb923c !important;
+  border: 1px solid rgba(249, 115, 22, 0.8) !important;
+  box-shadow: 0 0 8px rgba(249, 115, 22, 0.3) !important;
+}
+
+.sevFilterBtn.active.medium {
+  background: rgba(250, 204, 21, 0.22) !important;
+  color: #facc15 !important;
+  border: 1px solid rgba(250, 204, 21, 0.75) !important;
+  box-shadow: 0 0 8px rgba(250, 204, 21, 0.28) !important;
+}
+
+.sevFilterBtn.active.low {
+  background: rgba(96, 165, 250, 0.22) !important;
+  color: #93c5fd !important;
+  border: 1px solid rgba(96, 165, 250, 0.7) !important;
+  box-shadow: 0 0 8px rgba(96, 165, 250, 0.25) !important;
 }
 
 .catFilterGroup {
@@ -3475,18 +3489,16 @@ html, body {
   overflow: hidden;
 }
 
-.diffBeforePanel,
-.diffDoc1Panel {
-  background: rgba(7, 140, 255, 0.06);
-  border: 1px solid rgba(7, 140, 255, 0.28);
-  border-left: 3px solid #0284c7;
+.diffBeforePanel {
+  background: rgba(239, 68, 68, 0.07);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  border-left: 3px solid #ef4444;
 }
 
-.diffAfterPanel,
-.diffDoc2Panel {
-  background: rgba(99, 102, 241, 0.06);
-  border: 1px solid rgba(99, 102, 241, 0.28);
-  border-left: 3px solid #6366f1;
+.diffAfterPanel {
+  background: rgba(16, 185, 129, 0.07);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+  border-left: 3px solid #10b981;
 }
 
 .diffPanelHeader {
@@ -3506,11 +3518,10 @@ html, body {
 }
 
 .diffTagBefore,
-.diffTagDoc1,
 .diffBadgeMinus {
-  background: rgba(7, 140, 255, 0.20) !important;
-  color: #38bdf8 !important;
-  border: 1px solid rgba(7, 140, 255, 0.65) !important;
+  background: rgba(239, 68, 68, 0.22) !important;
+  color: #fca5a5 !important;
+  border: 1px solid rgba(239, 68, 68, 0.65) !important;
   font-size: 11px !important;
   font-weight: 800 !important;
   letter-spacing: 0.5px !important;
@@ -3528,11 +3539,10 @@ html, body {
 }
 
 .diffTagAfter,
-.diffTagDoc2,
 .diffBadgePlus {
-  background: rgba(99, 102, 241, 0.20) !important;
-  color: #a5b4fc !important;
-  border: 1px solid rgba(99, 102, 241, 0.65) !important;
+  background: rgba(16, 185, 129, 0.22) !important;
+  color: #86efac !important;
+  border: 1px solid rgba(16, 185, 129, 0.65) !important;
   font-size: 11px !important;
   font-weight: 800 !important;
   letter-spacing: 0.5px !important;
@@ -3577,17 +3587,14 @@ html, body {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   word-break: break-word;
-  color: #f1f5f9;
 }
 
-.diffText.beforeText,
-.diffText.doc1Text {
-  color: #e2e8f0;
+.diffText.beforeText {
+  color: #fca5a5;
 }
 
-.diffText.afterText,
-.diffText.doc2Text {
-  color: #e2e8f0;
+.diffText.afterText {
+  color: #86efac;
 }
 
 .diffTextEmpty {
@@ -4501,10 +4508,24 @@ html, body {
 }
 
 .sevFilterBtn.active.high {
-  background: rgba(245, 158, 11, 0.22) !important;
-  color: #fbbf24 !important;
-  border: 1px solid rgba(245, 158, 11, 0.85) !important;
-  box-shadow: 0 0 8px rgba(245, 158, 11, 0.35) !important;
+  background: rgba(249, 115, 22, 0.22) !important;
+  color: #fb923c !important;
+  border: 1px solid rgba(249, 115, 22, 0.8) !important;
+  box-shadow: 0 0 8px rgba(249, 115, 22, 0.3) !important;
+}
+
+.sevFilterBtn.active.medium {
+  background: rgba(250, 204, 21, 0.22) !important;
+  color: #facc15 !important;
+  border: 1px solid rgba(250, 204, 21, 0.75) !important;
+  box-shadow: 0 0 8px rgba(250, 204, 21, 0.28) !important;
+}
+
+.sevFilterBtn.active.low {
+  background: rgba(96, 165, 250, 0.22) !important;
+  color: #93c5fd !important;
+  border: 1px solid rgba(96, 165, 250, 0.7) !important;
+  box-shadow: 0 0 8px rgba(96, 165, 250, 0.25) !important;
 }
 
 .sevHigh,
@@ -4512,9 +4533,9 @@ html, body {
 .diffSevBadge.sevHigh,
 .sevPillSmall.sevHigh,
 .cellHigh {
-  background: rgba(245, 158, 11, 0.20) !important;
-  border: 1px solid rgba(245, 158, 11, 0.85) !important;
-  color: #fbbf24 !important;
-  box-shadow: 0 0 8px rgba(245, 158, 11, 0.30) !important;
+  background: rgba(249, 115, 22, 0.22) !important;
+  border: 1px solid rgba(249, 115, 22, 0.8) !important;
+  color: #fb923c !important;
+  box-shadow: 0 0 8px rgba(249, 115, 22, 0.3) !important;
   outline: none !important;
 }
