@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useRef } from 'react'
 
 function formatInlineBold(text) {
   const parts = String(text || '').split(/(\*\*[^*]+\*\*)/g)
@@ -212,6 +212,24 @@ export default function EchoResultCard({ data, guardrails: propGuardrails }) {
 
   const [leftDocIdx, setLeftDocIdx] = useState(0)
   const [rightDocIdx, setRightDocIdx] = useState(1)
+  const leftSideRef = useRef(null)
+  const rightSideRef = useRef(null)
+  const syncingSideRef = useRef(null)
+
+  const handleSyncSideScroll = (sourceSide) => {
+    if (syncingSideRef.current && syncingSideRef.current !== sourceSide) return
+    const srcEl = sourceSide === 'left' ? leftSideRef.current : rightSideRef.current
+    const dstEl = sourceSide === 'left' ? rightSideRef.current : leftSideRef.current
+    if (!srcEl || !dstEl) return
+    const srcMax = srcEl.scrollHeight - srcEl.clientHeight
+    const dstMax = dstEl.scrollHeight - dstEl.clientHeight
+    if (srcMax <= 0 || dstMax <= 0) return
+    syncingSideRef.current = sourceSide
+    dstEl.scrollTop = (srcEl.scrollTop / srcMax) * dstMax
+    requestAnimationFrame(() => {
+      syncingSideRef.current = null
+    })
+  }
 
   const impact = String(data.overall_impact || 'MEDIUM').toUpperCase()
   const impactClass =
@@ -1042,7 +1060,12 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
                 <span className="colVer">{selectedLeftDoc.version_label}</span>
                 <span className="colName">{selectedLeftDoc.name}</span>
               </div>
-              <div className="colClauses">
+              <div
+                ref={leftSideRef}
+                className="colClauses"
+                style={{ maxHeight: '460px', overflowY: 'auto' }}
+                onScroll={() => handleSyncSideScroll('left')}
+              >
                 {visibleChanges.map((c, idx) => (
                   <div key={idx} className="diffClauseBox diffClausePrev">
                     <span className="clauseTag">{c.section_or_topic} · {c.change_type}</span>
@@ -1057,7 +1080,12 @@ ${nextSteps.map(s => `- ${s}`).join('\n')}`
                 <span className="colVer">{selectedRightDoc.version_label}</span>
                 <span className="colName">{selectedRightDoc.name}</span>
               </div>
-              <div className="colClauses">
+              <div
+                ref={rightSideRef}
+                className="colClauses"
+                style={{ maxHeight: '460px', overflowY: 'auto' }}
+                onScroll={() => handleSyncSideScroll('right')}
+              >
                 {visibleChanges.map((c, idx) => (
                   <div key={idx} className="diffClauseBox diffClauseNew">
                     <span className="clauseTag">{c.section_or_topic} · {c.change_type}</span>
