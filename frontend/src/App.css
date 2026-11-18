@@ -4539,3 +4539,243 @@ html, body {
   box-shadow: 0 0 8px rgba(249, 115, 22, 0.3) !important;
   outline: none !important;
 }
+
+/* === UNIFIED CHAT WORKSPACE REDESIGN (244px SIDEBAR, NON-STICKY HEADER, BALANCED WIDTH) === */
+@media (min-width: 961px) {
+  .layout {
+    grid-template-columns: 244px minmax(0, 1fr);
+  }
+  .layout.withViewer {
+    grid-template-columns: 244px minmax(0, 1.25fr) minmax(340px, 0.95fr);
+  }
+}
+
+.side {
+  padding: 18px 14px;
+}
+
+.new {
+  white-space: nowrap;
+}
+
+.chat {
+  background: transparent;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.chatHead {
+  position: static;
+  flex-shrink: 0;
+  padding: 14px 28px 6px;
+  min-height: 48px;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  border-bottom: none !important;
+  gap: 16px;
+}
+
+.headLeft small,
+.titleCol small {
+  display: none;
+}
+
+.titleEditable,
+.titleBtn {
+  max-width: 100% !important;
+  font-weight: 600 !important;
+}
+
+.messages {
+  flex: 1 0 auto;
+  overflow: visible !important;
+  padding: 24px clamp(20px, 4vw, 52px);
+  gap: 18px;
+}
+
+.bubble.loading {
+  align-self: flex-start !important;
+  width: auto !important;
+  max-width: max-content !important;
+  margin-left: 0 !important;
+  margin-right: auto !important;
+}
+
+.bubble.ai {
+  max-width: min(90%, 840px);
+  width: 100%;
+  margin-left: 0 !important;
+  margin-right: auto !important;
+}
+
+.bubble.user {
+  max-width: min(82%, 680px);
+  width: auto;
+  margin-left: auto !important;
+  margin-right: 0 !important;
+}
+
+.composerArea {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  padding: 10px clamp(20px, 4vw, 52px) 16px;
+  border-top: none;
+}
+
+.composer {
+  max-width: 820px;
+  padding: 6px 10px;
+  border-radius: 22px;
+}
+
+.composer input:not([type="file"]) {
+  min-height: 34px;
+}
+
+/* === STATIC TRANSPARENT CHAT HEADER (TITLE + HOME) === */
+.chat {
+  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.chatHead {
+  position: static !important;
+  flex-shrink: 0;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  border-bottom: none !important;
+}
+
+.chatHead .ghost {
+  background: transparent !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+.messages {
+  flex: 1 1 auto !important;
+  min-height: 0;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+}
+
+.composerArea {
+  position: static !important;
+  flex-shrink: 0;
+  background: transparent !important;
+}
+
+/* === EXACT ALLY CHATPAGE PARITY (LAYOUT, SIDEBAR, HEADER, SURFACES, BUBBLES, COMPOSER) === */
+@media (min-width: 961px) {
+  .layout {
+    grid-template-columns: 244px minmax(0, 1fr) !important;
+  }
+  .layout.withViewer {
+    grid-template-columns: 244px minmax(0, 1.25fr) minmax(340px, 0.95fr) !important;
+  }
+}
+
+.side {
+  width: auto !important;
+  background: linear-gradient(180deg, #041220 0%, #030d18 100%) !important;
+  border-right: 1px solid rgba(56, 189, 248, 0.18) !important;
+  padding: 18px 14px !important;
+}
+
+.new {
+  white-space: nowrap;
+}
+
+.chat {
+  background: transparent !important;
+  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.chatHead {
+  position: static !important;
+  flex-shrink: 0 !important;
+  padding: 14px 28px 6px !important;
+  min-height: 48px !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  border-bottom: none !important;
+  gap: 16px !important;
+}
+
+.chatHead small,
+.headLeft small,
+.titleCol small {
+  display: none !important;
+}
+
+.titleEditable,
+.titleBtn {
+  max-width: 100% !important;
+  font-weight: 600 !important;
+  color: #f1f5f9 !important;
+}
+
+.chatHead .ghost {
+  background: transparent !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+.messages {
+  flex: 1 1 auto !important;
+  min-height: 0;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  padding: 24px clamp(20px, 4vw, 52px) !important;
+  gap: 18px;
+}
+
+.bubble.loading {
+  align-self: flex-start !important;
+  width: auto !important;
+  max-width: max-content !important;
+  margin-left: 0 !important;
+  margin-right: auto !important;
+}
+
+.bubble.ai {
+  max-width: min(90%, 840px) !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: auto !important;
+  background: rgba(10, 31, 54, 0.94) !important;
+  border: 1px solid rgba(56, 189, 248, 0.26) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.32) !important;
+}
+
+.bubble.user {
+  max-width: min(82%, 680px) !important;
+  width: auto !important;
+  margin-left: auto !important;
+  margin-right: 0 !important;
+  background: linear-gradient(135deg, rgba(14, 116, 214, 0.32), rgba(7, 89, 168, 0.26)) !important;
+  border: 1px solid rgba(56, 189, 248, 0.45) !important;
+}
+
+.composerArea {
+  position: static !important;
+  flex-shrink: 0 !important;
+  padding: 10px clamp(20px, 4vw, 52px) 16px !important;
+  background: transparent !important;
+  border-top: none !important;
+}
+
+.composer {
+  max-width: 820px !important;
+  padding: 6px 10px !important;
+  border-radius: 22px !important;
+  background: rgba(8, 25, 44, 0.94) !important;
+  border: 1px solid rgba(56, 189, 248, 0.32) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.38) !important;
+}
+
+.composer input:not([type="file"]) {
+  min-height: 34px;
+}
