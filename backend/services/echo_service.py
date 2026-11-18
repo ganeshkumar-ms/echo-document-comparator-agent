@@ -549,7 +549,7 @@ def _build_bulk_collection_comparison(docs: list, relationships: dict, mode: dic
         crit_count = sum(1 for c in ver_changes if c['severity'] == 'CRITICAL')
         high_count = sum(1 for c in ver_changes if c['severity'] == 'HIGH')
 
-        role_str = "Baseline Version" if idx == 0 else f"Revision {idx}" if idx < n - 1 else "Current Latest Version"
+        role_str = f"Document {idx + 1}"
         evolution_timeline.append({
             'index': idx,
             'version': inv['version_label'],
@@ -735,8 +735,8 @@ def _enrich_bedrock_comparison(parsed: dict, fallback_comp: dict) -> dict:
                 'severity': sev,
                 'impact_category': str(item.get('impact_category') or 'Operational & SLA Impact').strip(),
                 'section_or_topic': str(item.get('section_or_topic') or f"Section {idx + 1}").strip(),
-                'previous_text': str(item.get('previous_text') or 'Not present in prior version').strip(),
-                'new_text': str(item.get('new_text') or 'Removed in revised version').strip(),
+                'previous_text': str(item.get('previous_text') or 'Not present in Document 1').strip(),
+                'new_text': str(item.get('new_text') or 'Not present in Document 2').strip(),
                 'what_changed': str(item.get('what_changed') or 'Clause updated.').strip(),
                 'why_it_matters': str(item.get('why_it_matters') or 'Alters obligations or terms.').strip(),
                 'who_is_affected': item.get('who_is_affected') or ['Customers', 'Operations'],
