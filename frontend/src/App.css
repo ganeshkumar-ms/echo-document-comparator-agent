@@ -4779,3 +4779,872 @@ html, body {
 .composer input:not([type="file"]) {
   min-height: 34px;
 }
+
+/* === END-TO-END MOBILE CHAT RESPONSIVE OVERRIDE === */
+/* Desktop base styles for unified INDEX Guardrail + Trace bar */
+.idxTopMetaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+.idxGuardrailPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+.idxGuardrailPill.passed {
+  background: rgba(52, 211, 153, 0.16);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.45);
+}
+.idxGuardrailPill.blocked {
+  background: rgba(239, 68, 68, 0.22);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.65);
+}
+.idxTraceBadge {
+  font-size: 11px;
+  font-family: ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
+  font-weight: 600;
+  color: #38bdf8;
+  letter-spacing: 0.6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(7, 140, 255, 0.08);
+  border: 1px solid rgba(7, 140, 255, 0.26);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+@media (min-width: 769px) {
+  .mobileMenu,
+  .mobileOnlyBtn,
+  .drawerClose {
+    display: none !important;
+  }
+}
+@media (max-width: 768px) {
+  /* Instant single-tap responsiveness on iOS / touch devices (eliminate Safari double-tap / hover-trap bug) */
+  html, body, button, a, [role="button"], .card, .histRow, .hist, .histTitle, .recentCard, .recentItem, input, textarea, select {
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+  button, a, [role="button"], .card, .histRow, .hist, .histTitle {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .aurora,
+  .grid,
+  .app::before,
+  .app::after,
+  .promptGlow::before,
+  .scrim:not(.show) {
+    pointer-events: none !important;
+  }
+  .histActions {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transition: none !important;
+  }
+  .histRow:hover,
+  .histRow:hover .hist,
+  .histRow:hover .histTitle,
+  .card:hover,
+  .enter:hover,
+  .ghost:hover {
+    transform: none !important;
+  }
+  button:active,
+  .card:active,
+  .histRow:active {
+    opacity: 0.85;
+  }
+  html, body, #root, .app {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  /* Desktop-proportioned breathing room & strict viewport containment on mobile agent home screens */
+  #home,
+  .homePage {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+  .home,
+  #home .home,
+  .homePage .home {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    padding: clamp(46px, 8.5vh, 68px) 16px calc(34px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .home > *,
+  .promptGlow,
+  .prompt,
+  .recent,
+  .recentWrap,
+  .recentSection,
+  .cards,
+  .empty,
+  .emptyState {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+  .prompt {
+    padding: 7px 8px !important;
+    gap: 6px !important;
+  }
+  .prompt input,
+  .prompt textarea,
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+  .prompt input,
+  .prompt textarea {
+    width: 0 !important;
+    min-width: 0 !important;
+    flex: 1 1 0 !important;
+    padding: 9px 6px !important;
+  }
+  .prompt .startAttach,
+  .prompt .plus,
+  .prompt .send,
+  .prompt button {
+    width: 38px !important;
+    height: 38px !important;
+    flex: 0 0 38px !important;
+    border-radius: 11px !important;
+  }
+  .eyebrow {
+    margin-bottom: 14px !important;
+  }
+  .home h1,
+  #home h1,
+  .homePage h1 {
+    margin: 14px 0 0 !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+  }
+  .sub,
+  #home .sub,
+  .homePage .sub {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 20px auto 30px !important;
+    line-height: 1.65 !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+  }
+  .recent,
+  .recentWrap,
+  .recentSection {
+    margin-top: 34px !important;
+  }
+  .chatPage {
+    height: 100% !important;
+    max-height: 100dvh !important;
+    width: 100% !important;
+    overflow: hidden !important;
+  }
+  .layout {
+    height: 100% !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: minmax(0, 1fr) !important;
+  }
+  .side {
+    animation: none !important;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 120 !important;
+    width: min(86vw, 320px) !important;
+    max-width: 320px !important;
+    height: 100% !important;
+    transform: translateX(-105%) !important;
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: 18px 0 48px rgba(0, 0, 0, 0.75) !important;
+  }
+  .side.open {
+    transform: translateX(0) !important;
+  }
+  .drawerClose {
+    display: grid !important;
+    place-items: center !important;
+    position: absolute !important;
+    top: 14px !important;
+    right: 14px !important;
+    z-index: 999 !important;
+    width: 38px !important;
+    height: 38px !important;
+    padding: 0 !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    border-radius: 10px !important;
+    border: 1px solid rgba(56, 189, 248, 0.38) !important;
+    background: rgba(7, 140, 255, 0.16) !important;
+    color: #ffffff !important;
+  }
+  .mobileMenu,
+  .mobileOnlyBtn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 6px 10px !important;
+    border-radius: 999px !important;
+    border: 1px solid rgba(56, 189, 248, 0.35) !important;
+    background: rgba(7, 140, 255, 0.12) !important;
+    color: #e2e8f0 !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.6px !important;
+    cursor: pointer !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+  .mobileMenu .icon {
+    width: 14px !important;
+    height: 14px !important;
+  }
+  .chat {
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  .chatHead {
+    height: 50px !important;
+    min-height: 50px !important;
+    padding: 0 10px !important;
+    gap: 6px !important;
+  }
+  .chatHead b,
+  .chatHead .titleEditable {
+    font-size: 13px !important;
+    max-width: 100% !important;
+  }
+  .chatHead small {
+    font-size: 9.5px !important;
+    margin-top: 1px !important;
+  }
+  .messages {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    padding: 10px 8px 18px !important;
+    gap: 10px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .messages > * {
+    flex-shrink: 0 !important;
+  }
+  /* Natural word wrapping — never break words mid-character */
+  .bubble,
+  .bubble *,
+  .claria-file-name,
+  .claria-exec-paper,
+  .claria-exec-paper * {
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+  }
+  .bubble code,
+  .bubble pre {
+    overflow-wrap: anywhere !important;
+  }
+  .bubble {
+    flex-shrink: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+  .bubble.user {
+    max-width: 88% !important;
+    padding: 9px 13px !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    border-radius: 16px 16px 4px 16px !important;
+  }
+  /* Desktop-like slight right margin on AI responses (94% width, left-aligned) */
+  .bubble.ai,
+  .bubble.ai:has(*),
+  .bubble.ai:has(.claria-doc-viewer-mode),
+  .bubble.ai:has(.claria-compare-split-container) {
+    width: 94% !important;
+    max-width: 94% !important;
+    margin-left: 0 !important;
+    margin-right: auto !important;
+    padding: 12px !important;
+    font-size: 14px !important;
+    line-height: 1.55 !important;
+    border-radius: 14px !important;
+  }
+  /* Remove redundant outer bubble chrome ONLY when the inner card already has a full outer frame */
+  .bubble.ai:has(.claria-doc-viewer-mode),
+  .bubble.ai:has(.claria-file-viewer-card) {
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  /* Keep LENS as ONE unified cohesive AI response card on mobile */
+  .bubble.ai:has(.lensResultCard) {
+    padding: 12px 10px !important;
+    background: rgba(8, 28, 48, 0.95) !important;
+    border: 1px solid rgba(56, 189, 248, 0.28) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.36) !important;
+  }
+  .composerArea {
+    padding: 6px 8px calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+    flex-shrink: 0 !important;
+  }
+  .composer {
+    padding: 5px 6px !important;
+    border-radius: 16px !important;
+    max-width: 100% !important;
+  }
+  .composer form {
+    gap: 6px !important;
+  }
+  .plus,
+  .chatSend {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 11px !important;
+    flex-shrink: 0 !important;
+  }
+  .composer input,
+  .composer textarea {
+    padding: 9px 8px !important;
+    font-size: 16px !important;
+    min-width: 0 !important;
+  }
+
+  /* === CUSTOM MOBILE CLARIA RESPONSE & DOCUMENT SHEET === */
+  .claria-file-viewer-card {
+    border-radius: 14px !important;
+    border: 1px solid rgba(56, 189, 248, 0.26) !important;
+    background: #031322 !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+  }
+  .claria-viewer-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 12px !important;
+  }
+  .claria-viewer-file-info {
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+  .claria-file-badge-icon {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+    font-size: 15px !important;
+  }
+  .claria-file-name {
+    font-size: 14.5px !important;
+    line-height: 1.3 !important;
+  }
+  .claria-file-subtitle {
+    font-size: 11.5px !important;
+    line-height: 1.35 !important;
+  }
+  .claria-viewer-actions {
+    width: 100% !important;
+    display: flex !important;
+    gap: 8px !important;
+  }
+  .claria-viewer-actions .claria-tool-btn.primary {
+    flex: 1 1 auto !important;
+    justify-content: center !important;
+    padding: 9px 12px !important;
+    font-size: 12.5px !important;
+    border-radius: 10px !important;
+  }
+  .claria-watchout-filter-bar,
+  .claria-filter-pills {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 6px !important;
+    padding: 8px 10px !important;
+  }
+  .claria-watchout-filter-bar::-webkit-scrollbar,
+  .claria-filter-pills::-webkit-scrollbar,
+  .claria-rd-tone-actions::-webkit-scrollbar {
+    display: none;
+  }
+  .claria-filter-pill {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    padding: 6px 11px !important;
+    font-size: 11.5px !important;
+  }
+  .claria-redesign-body,
+  .claria-redesign-compare,
+  .claria-document-viewport {
+    padding: 10px !important;
+    gap: 10px !important;
+  }
+  .claria-rd-tone-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 10px !important;
+    margin-bottom: 10px !important;
+    gap: 8px !important;
+    border-radius: 10px !important;
+  }
+  .claria-rd-tone-status {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+  .claria-rd-tone-badge,
+  .claria-rd-inst-badge {
+    font-size: 11px !important;
+    padding: 4px 9px !important;
+    border-radius: 8px !important;
+    line-height: 1.35 !important;
+  }
+  .claria-rd-tone-actions {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 6px !important;
+    padding: 2px 0 !important;
+  }
+  .claria-rd-tone-label {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    font-size: 11px !important;
+    margin-right: 2px !important;
+  }
+  .claria-rd-tone-btn {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    padding: 5px 10px !important;
+    font-size: 11.5px !important;
+  }
+  /* Mobile-optimized white document paper sheet */
+  .claria-exec-paper {
+    padding: 16px 13px !important;
+    border-radius: 10px !important;
+    font-size: 13.5px !important;
+    line-height: 1.55 !important;
+  }
+  .claria-exec-title {
+    font-size: 18.5px !important;
+    line-height: 1.28 !important;
+    margin-bottom: 10px !important;
+  }
+  .claria-exec-lead {
+    font-size: 13.5px !important;
+    margin-bottom: 12px !important;
+  }
+  .claria-exec-deadline-box {
+    padding: 11px 12px !important;
+    margin-bottom: 14px !important;
+    border-radius: 8px !important;
+  }
+  .claria-exec-deadline-date {
+    font-size: 18px !important;
+  }
+  .claria-exec-h2 {
+    font-size: 15px !important;
+  }
+  .claria-exec-p,
+  .claria-exec-checklist li,
+  .claria-exec-routes,
+  .claria-exec-signoff {
+    font-size: 13.5px !important;
+  }
+  /* Preserve true header-to-value table alignment on mobile with smooth horizontal scroll */
+  .claria-exec-table {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    table-layout: auto !important;
+    border-collapse: collapse !important;
+    font-size: 12px !important;
+  }
+  .claria-exec-table thead {
+    display: table-header-group !important;
+  }
+  .claria-exec-table tbody {
+    display: table-row-group !important;
+  }
+  .claria-exec-table tr {
+    display: table-row !important;
+  }
+  .claria-exec-table th,
+  .claria-exec-table td {
+    display: table-cell !important;
+    width: auto !important;
+    min-width: 92px !important;
+    border: 1px solid #dce3ec !important;
+    padding: 6px 8px !important;
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+    vertical-align: top !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+  }
+  .claria-exec-table th {
+    background: #f1f5f9 !important;
+    color: #163a5f !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+  }
+  .claria-orig-doc-iframe,
+  .claria-compare-pane-body .claria-orig-doc-iframe {
+    width: 100% !important;
+    margin-right: 0 !important;
+    height: 520px !important;
+  }
+  .claria-compare-pane-body .claria-exec-paper {
+    zoom: 1 !important;
+    padding: 14px 12px !important;
+  }
+  .claria-compare-split-container {
+    padding: 10px !important;
+  }
+  .claria-compare-footer-bar {
+    padding: 12px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .claria-compare-toggle-btn {
+    width: 100% !important;
+    text-align: center !important;
+  }
+
+  /* === UNIVERSAL AGENT RESULT CARDS MOBILE STACKING === */
+  .claria-compare-grid,
+  .lensCompareGrid,
+  .lensDimGrid,
+  .lensDualGrid,
+  .channelGrid,
+  .bulkGrid,
+  .grid2,
+  .grid3,
+  .twoCol,
+  .statsGrid,
+  .kpiGrid,
+  .summaryGrid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .claria-rd-header,
+  .lensActionRow,
+  .lensHeaderRow {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+  .lensTopMetaRow,
+  .claria-top-status-bar,
+  .guardrailBar,
+  .idxTopMetaRow {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 6px !important;
+    margin-bottom: 10px !important;
+    width: 100% !important;
+  }
+  .lensGuardrailPill,
+  .claria-guardrail-pill,
+  .guardrailPill,
+  .glnGuardrailPill,
+  .srtGuardrailPill,
+  .adpGuardrailBadge,
+  .idxGuardrailPill,
+  .lensTraceBadge,
+  .claria-trace-badge,
+  .adpTraceChip,
+  .echoTracePill,
+  .glnTraceChip,
+  .srtTraceChip,
+  .idxTraceBadge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    height: 24px !important;
+    padding: 0 9px !important;
+    border-radius: 999px !important;
+    font-size: 9.5px !important;
+    line-height: 1 !important;
+    letter-spacing: 0.2px !important;
+    white-space: nowrap !important;
+    margin-left: 0 !important;
+    flex-shrink: 0 !important;
+  }
+  .lensGuardrailPill svg,
+  .claria-guardrail-pill svg,
+  .idxGuardrailPill svg,
+  .adpGuardrailBadge svg {
+    width: 12px !important;
+    height: 12px !important;
+    flex-shrink: 0 !important;
+  }
+  /* === CUSTOM MOBILE INDEX METADATA RESPONSE === */
+  .idxRegistrySection,
+  .idxTableWrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 10px !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+  }
+  .idxTableWrap {
+    padding: 0 !important;
+  }
+  .idxRegistryHeaderRow {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+  .idxExportBtns {
+    display: flex !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  .idxExportBtns .idxDropdownWrap,
+  .idxExportBtns > .idxActionBtn {
+    flex: 1 1 0 !important;
+  }
+  .idxExportBtns .idxActionBtn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  .idxFilterBar {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 6px !important;
+    padding-bottom: 4px !important;
+  }
+  .idxFilterBar::-webkit-scrollbar {
+    display: none !important;
+  }
+  .idxFilterPill {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+  }
+  .idxMetadataTable {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+  }
+  .idxMetadataTable thead {
+    display: none !important;
+  }
+  .idxMetadataTable tbody {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  .idxMetadataTable tr {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    padding: 10px 11px !important;
+    border-radius: 10px !important;
+    border: 1px solid rgba(56, 189, 248, 0.2) !important;
+    background: rgba(4, 20, 36, 0.78) !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .idxMetadataTable td {
+    display: block !important;
+    width: 100% !important;
+    padding: 0 !important;
+    border: 0 !important;
+  }
+  .idxMetadataTable .idxColLabel strong {
+    font-size: 12.5px !important;
+    color: #ffffff !important;
+  }
+  .idxMetadataTable .idxValWrap {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    font-size: 12.5px !important;
+    color: #cbd5e1 !important;
+  }
+
+  /* === CUSTOM MOBILE LENS FIXED DOCUMENT, DECISION BAR & DIFF === */
+  .lensModifyDecisionBar,
+  .lensModifyDeclinedBar,
+  .lensFixedDocPanel,
+  .lensExecBanner {
+    padding: 12px !important;
+    gap: 10px !important;
+    border-radius: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .lensModifyDecisionText {
+    flex: 1 1 100% !important;
+  }
+  .lensModifyBtnGroup,
+  .lensFixedDocActions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 7px !important;
+    width: 100% !important;
+  }
+  .lensDecisionBtn,
+  .lensFixedDocActions .lensActionBtn {
+    flex: 1 1 auto !important;
+    justify-content: center !important;
+    padding: 9px 11px !important;
+    font-size: 12px !important;
+    text-align: center !important;
+  }
+  .lensFixedDocHead {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding-bottom: 10px !important;
+  }
+  .lensFixedDocTitleLeft {
+    gap: 8px !important;
+  }
+  .lensFixedDocTitleLeft h4 {
+    font-size: 13.5px !important;
+    line-height: 1.35 !important;
+  }
+  .lensFixedDocPreviewLabel {
+    padding: 8px 11px !important;
+    font-size: 10px !important;
+  }
+  .lensFixedDocContent {
+    padding: 12px !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+    gap: 9px !important;
+  }
+  .lensFixedDocContent p {
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+  }
+  .lensDiffLegend {
+    padding: 8px 10px !important;
+    gap: 6px !important;
+    font-size: 11px !important;
+  }
+  .lensDiffLine {
+    font-size: 12.5px !important;
+    padding: 4px 6px !important;
+  }
+
+  /* === UNIVERSAL MULTI-COLUMN GRID STACKING ACROSS ALL 11 AGENTS === */
+  .adpAnalyticsStrip,
+  .adpCompareBox,
+  .metricsGrid,
+  .glnTopicsGrid,
+  .glnKpiVisualGrid,
+  .glnArchVisualGrid,
+  .visualChartsGrid,
+  .srtChartsGrid,
+  .srtHeatStrip,
+  .srtMetaGrid,
+  .srtAnalyticsKpis {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .bubble table:not(.claria-exec-table):not(.idxMetadataTable) {
+    min-width: 0 !important;
+  }
+  .lensResultCard {
+    padding: 0 !important;
+    gap: 10px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .lensSectionHead {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+  .lensScoreHeader,
+  .lensIssueCard,
+  .lensCardBox {
+    padding: 12px !important;
+    border-radius: 12px !important;
+  }
+  .lensRagBadge {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+  .lensTableWrap,
+  .tableWrap,
+  .matrixWrap,
+  .clariaDashTableWrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .bubble pre {
+    overflow-x: auto !important;
+    max-width: 100% !important;
+    padding: 10px !important;
+    font-size: 12px !important;
+  }
+  .bubble table:not(.claria-exec-table) {
+    max-width: 100% !important;
+    width: 100% !important;
+    display: block !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    font-size: 12px !important;
+  }
+  .bubble table:not(.claria-exec-table) th,
+  .bubble table:not(.claria-exec-table) td {
+    padding: 8px 9px !important;
+    vertical-align: top !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+  }
+}
