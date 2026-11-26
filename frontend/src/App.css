@@ -5709,3 +5709,21 @@ html, body {
   box-shadow: none !important;
   filter: grayscale(0.35);
 }
+
+/* === AI STORE IFRAME 90% ZOOM ON CHAT PAGE ONLY (HOME & STANDALONE UNCHANGED) === */
+@media (min-width: 961px) {
+  html.in-iframe:has(.layout),
+  html.in-iframe:has(.chatPage) {
+    zoom: 0.9;
+  }
+  html.in-iframe:has(.layout) .layout,
+  html.in-iframe:has(.chatPage) .chatPage {
+    height: 100% !important;
+  }
+}
+
+/* Slightly more upward breathing room when scrolling to top of last AI response */
+.bubble.ai,
+.msg.ai {
+  scroll-margin-top: 38px;
+}
