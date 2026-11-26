@@ -5648,3 +5648,64 @@ html, body {
     overflow-wrap: break-word !important;
   }
 }
+
+/* === STRICT SINGLE-LINE CHAT WORKSPACE HEADER (DESKTOP & MOBILE) === */
+.chatHead {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+}
+.chatHead > div:first-child,
+.chatHead .headLeft,
+.chatHead .titleCol,
+.chatHead .chatHeadLeft {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+}
+.chatHead b,
+.chatHead #title,
+.chatHead .titleEditable,
+.chatHead .titleBtn,
+.chatHead .titleEditable b {
+  display: block !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.35 !important;
+}
+.chatHead small,
+.chatHead .headLeft small,
+.chatHead .titleCol small,
+.chatHead .chatHeadLeft small {
+  display: none !important;
+}
+.chatHead .mobileActions,
+.chatHead .chatActions,
+.chatHead > div:last-child {
+  flex-shrink: 0 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+}
+
+/* === FREEZE NEW CONVERSATION BUTTON WHEN ALREADY IN A NEW CONVERSATION === */
+.new:disabled,
+.new[aria-disabled="true"] {
+  opacity: 0.42 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  filter: grayscale(0.35);
+}

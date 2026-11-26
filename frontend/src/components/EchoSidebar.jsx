@@ -43,6 +43,8 @@ export default function EchoSidebar({
     }
   }
 
+  const isAlreadyNew = !currentSessionId || !sessions.some(s => s.id === currentSessionId && (s.messages || []).length > 0)
+
   return (
     <aside className={`side${isOpen ? ' open' : ''}`}>
       <button
@@ -58,9 +60,8 @@ export default function EchoSidebar({
 
       <span className="word">ECHO</span>
 
-      <button
-        className="new"
-        onClick={() => { onNew(); onClose(); }}
+      <button className="new"
+        disabled={isAlreadyNew} aria-disabled={isAlreadyNew} title={isAlreadyNew ? "Already in a new conversation" : "Start a new conversation"} onClick={() => { if (isAlreadyNew) return; onNew(); onClose(); }}
         type="button"
       >
         <svg className="icon" viewBox="0 0 24 24" width="16" height="16" style={{ flexShrink: 0 }} aria-hidden="true">

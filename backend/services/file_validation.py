@@ -4,7 +4,7 @@ import zipfile
 from pathlib import Path
 from typing import Dict, Optional, Tuple
 
-AGENT_FILE_POLICY = {'name': 'ECHO', 'supports_vision': False, 'supports_zip': False, 'max_bytes': 10485760, 'supported_formats': 'PDF (selectable text), Word (.docx), Excel (.xlsx), CSV, JSON, XML, HTML, Markdown (.md), and TXT'}
+AGENT_FILE_POLICY = {'name': 'ECHO', 'supports_vision': True, 'supports_zip': True, 'max_bytes': 10485760, 'supported_formats': 'PDF (digital or scanned), Word (.docx), Excel (.xlsx), PowerPoint (.pptx), CSV, JSON, XML, YAML, SQL, HTML, Markdown (.md), TXT, Source Code, Images (.png, .jpg, .webp, .gif), and ZIP archives'}
 
 IMAGE_EXTS = {
     '.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.tiff', '.tif', '.ico', '.heic', '.avif',
@@ -169,9 +169,39 @@ def validate_file_pre_extract(
     size_bytes = total_size_override if total_size_override is not None else len(data)
     detected_type = ext or 'unknown extension'
 
+    # 1. Empty (0 bytes)
+    if size_bytes == 0 or len(data) == 0:
+        return _build_rejection(
+            reason_code='EMPTY_FILE',
+            title='Empty File (0 Bytes)',
+            filename=fname,
+            detected_type=detected_type,
+            size_bytes=0,
+            why=f"{agent_name} cannot process '{fname}' because the file contains 0 bytes and has no readable text, structure, or document content.",
+            technical_detail='Uploaded payload length is 0 bytes.',
+            how_to_fix='Open the source document, verify that it contains content, save it properly, and upload the non-empty file.',
+            policy=pol,
+        )
+
+    # Shared Enterprise Security v2.0.0: Malware, Active PDF Script, VBA Macro & ZIP-Bomb Gate
+    from services.enterprise_security import scan_archive_and_malware, detect_usable_secrets
+    mal_scan = scan_archive_and_malware(fname, data)
+    if mal_scan:
+        return _build_rejection(
+            reason_code=mal_scan['reason_code'],
+            title=mal_scan['title'],
+            filename=fname,
+            detected_type=detected_type,
+            size_bytes=size_bytes,
+            why=mal_scan['reason'],
+            technical_detail=mal_scan['reason'],
+            how_to_fix='Remove active scripts, macros, path traversal entries, or excessive archive nesting and re-upload a clean document.',
+            policy=pol,
+        )
+
     # 1b. Raw Credential & Access Key File Guardrail (PCI-DSS & GLBA)
-    is_cred_name = bool(re.search(r'(?i)(?:access[_\-]?keys?|credentials?|\.env|id_rsa|private[_\-]?key|secret|aws|apikey|api_key|token)', fname))
-    has_raw_key = bool(re.search(rb'(?i)(?:AKIA|ASIA)[0-9A-Z]{16}', data[:16384]))
+    is_cred_name = bool(re.search(r'(?i)(?:^|[_\-/\\])(?:access[_\-]?keys?\.csv|credentials?\.csv|\.env(?:\.\w+)?|id_rsa|id_ed25519|private[_\-]?key\.pem)$', fname))
+    has_raw_key = bool(detect_usable_secrets(data[:16384].decode('utf-8', errors='ignore')))
     has_raw_key_text = bool(re.search(rb'(?i)(?:access\s*key\s*id|secret\s*access\s*key|aws_access_key_id|aws_secret_access_key)', data[:16384]))
     if is_cred_name or has_raw_key or has_raw_key_text:
         return _build_rejection(

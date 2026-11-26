@@ -55,110 +55,43 @@ def _is_mostly_readable_text(text: str) -> bool:
 
 
 def _extract_pdf_text(raw_bytes: bytes) -> str:
-    """Robust multi-engine PDF text extractor using pdfplumber and pypdfium2."""
-    # 1. Try pdfplumber
-    try:
-        import pdfplumber
-        with pdfplumber.open(io.BytesIO(raw_bytes)) as pdf:
-            pages_txt = []
-            for p in pdf.pages[:60]:
-                pt = (p.extract_text() or '').strip()
-                if pt:
-                    pages_txt.append(pt)
-            full = '\n\n'.join(pages_txt).strip()
-            if _is_mostly_readable_text(full):
-                return full
-    except Exception:
-        pass
-
-    # 2. Try pypdfium2
-    try:
-        import pypdfium2 as pdfium
-        pdf = pdfium.PdfDocument(raw_bytes)
-        pages_txt = []
-        for i in range(min(len(pdf), 60)):
-            page = pdf[i]
-            textpage = page.get_textpage()
-            txt = (textpage.get_text_range() or '').strip()
-            if txt:
-                pages_txt.append(txt)
-        full = '\n\n'.join(pages_txt).strip()
-        if _is_mostly_readable_text(full):
-            return full
-    except Exception:
-        pass
-
-    # 3. Try pdfminer
-    try:
-        _ensure_pdfminer_ready()
-        from pdfminer.high_level import extract_text as pdfminer_extract
-        extracted = pdfminer_extract(io.BytesIO(raw_bytes)).strip()
-        if _is_mostly_readable_text(extracted):
-            return extracted
-    except Exception:
-        pass
-
-    # 4. Pure-stdlib FlateDecode / PDF text-stream fallback (works on AWS Lambda with zero external deps)
-    try:
-        chunks = []
-        for m in re.finditer(rb'stream[\r\n]+(.*?)endstream', raw_bytes, re.DOTALL):
-            stream_data = m.group(1)
+    """Pure-stdlib PDF text extractor supporting /ASCII85Decode + /FlateDecode, /FlateDecode, and raw streams."""
+    import base64
+    chunks = []
+    stream_pattern = re.compile(rb'stream\r?\n(.*?)endstream', re.S)
+    for match in stream_pattern.finditer(raw_bytes):
+        data = match.group(1).rstrip(b'\r\n')
+        decoded = data
+        # 1. Decode Adobe ASCII85 (~> terminator) if present
+        stripped = decoded.strip()
+        if b'~>' in stripped:
             try:
-                decoded = zlib.decompress(stream_data)
+                decoded = base64.a85decode(stripped, adobe=True)
             except Exception:
-                decoded = stream_data
-            text_ops = re.findall(rb'\(([^()\\]*(?:\\.[^()\\]*)*)\)\s*Tj', decoded)
-            arr_ops = re.findall(rb'\[(.*?)\]\s*TJ', decoded, re.DOTALL)
-            for t in text_ops:
-                s = t.decode('latin-1', errors='ignore').replace(r'\(', '(').replace(r'\)', ')').replace(r'\\', '\\')
-                if s.strip():
-                    chunks.append(s)
-            for arr in arr_ops:
-                parts = re.findall(rb'\(([^()\\]*(?:\\.[^()\\]*)*)\)', arr)
-                joined = ''.join(
-                    p.decode('latin-1', errors='ignore').replace(r'\(', '(').replace(r'\)', ')').replace(r'\\', '\\')
-                    for p in parts
-                )
-                if joined.strip():
-                    chunks.append(joined)
-        stdlib_text = re.sub(r'\s+', ' ', ' '.join(chunks)).strip()
-        if _is_mostly_readable_text(stdlib_text):
-            return stdlib_text
-    except Exception:
-        pass
-
-    # 5. Amazon Bedrock Nova Lite native PDF extraction fallback (fast on AWS Lambda for <= 4.5 MB PDFs)
-    if 0 < len(raw_bytes) <= 4_500_000:
+                try:
+                    decoded = base64.a85decode(stripped.split(b'~>', 1)[0] + b'~>', adobe=True)
+                except Exception:
+                    pass
+        # 2. Decompress FlateDecode (zlib) if compressed
         try:
-            import boto3
-            from botocore.config import Config
-            region = os.getenv('AWS_DEFAULT_REGION') or os.getenv('AWS_REGION') or 'us-east-1'
-            br = boto3.client(
-                'bedrock-runtime',
-                region_name=region,
-                config=Config(read_timeout=20, connect_timeout=3, retries={'max_attempts': 1}),
-            )
-            res = br.converse(
-                modelId='us.amazon.nova-lite-v1:0',
-                messages=[{
-                    'role': 'user',
-                    'content': [
-                        {'document': {'format': 'pdf', 'name': 'uploaded_document', 'source': {'bytes': raw_bytes}}},
-                        {'text': (
-                            'Transcribe ALL readable text, headings, sections, tables, figures, and clauses across every page of this PDF verbatim. '
-                            'Preserve exact wording, numbers, dates, and structure.'
-                        )}
-                    ]
-                }],
-                inferenceConfig={'maxTokens': 2200, 'temperature': 0.0}
-            )
-            bedrock_text = res['output']['message']['content'][0]['text'].strip()
-            if _is_mostly_readable_text(bedrock_text):
-                return bedrock_text
+            decoded = zlib.decompress(decoded)
         except Exception:
             pass
+        text_str = decoded.decode('latin-1', errors='ignore')
+        for paren in re.findall(r'\(([^()]*)\)', text_str):
+            cleaned = paren.replace(r'\(', '(').replace(r'\)', ')').replace(r'\\', '\\').strip()
+            if cleaned and any(ch.isalnum() for ch in cleaned):
+                chunks.append(cleaned)
+    if not chunks:
+        raw = raw_bytes.decode('latin-1', errors='ignore')
+        for m in re.findall(r'\(([^()]{2,200})\)', raw):
+            cleaned = m.replace(r'\(', '(').replace(r'\)', ')').strip()
+            if cleaned and sum(ch.isalnum() or ch.isspace() for ch in cleaned) >= len(cleaned) * 0.65:
+                if any(ch.isalpha() for ch in cleaned):
+                    chunks.append(cleaned)
+    joined = ' '.join(chunks).strip()
+    return re.sub(r'\s+', ' ', joined)
 
-    return ''
 
 
 def _extract_docx_text(raw_bytes: bytes) -> str:

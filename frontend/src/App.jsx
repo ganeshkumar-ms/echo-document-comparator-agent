@@ -285,14 +285,21 @@ export default function App() {
   }
 
   function deleteSession(id) {
-    setSessions(prev => prev.filter(s => s.id !== id))
+    const idx = sessions.findIndex(s => s.id === id)
+    const remaining = sessions.filter(s => s.id !== id)
+    setSessions(remaining)
     if (currentId === id) {
-      setCurrentId(null)
-      setDraftMessages([])
-      setDraftTitle('New conversation')
-      setAttachedFiles([])
-      setViewerDocs(null)
-      setView('chat')
+      if (remaining.length > 0) {
+        const nextSess = remaining[idx >= 0 && idx < remaining.length ? idx : remaining.length - 1]
+        loadSession(nextSess)
+      } else {
+        setCurrentId(null)
+        setDraftMessages([])
+        setDraftTitle('New conversation')
+        setAttachedFiles([])
+        setViewerDocs(null)
+        setView('chat')
+      }
     }
   }
 
@@ -742,10 +749,16 @@ export default function App() {
 
                 <div className="messages" ref={messagesRef} aria-live="polite">
                   {activeMessages.length === 0 && !isLoading && (
-                    <div className="welcomeHint">
-                      <div className="welcomeTitle">Ready to Compare Documents</div>
-                      <p>
-                        Attach documents below or paste clauses to analyze what changed and why it matters.
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', color: '#849bb4', maxWidth: '520px', margin: '0 auto', padding: '24px' }}>
+                      <div style={{ display: 'inline-flex', padding: '13px', borderRadius: '14px', background: 'rgba(7, 140, 255, 0.1)', border: '1px solid rgba(7, 140, 255, 0.25)', color: '#38bdf8', marginBottom: '14px' }}>
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="3" y="3" width="7" height="18" rx="1.5" />
+                          <rect x="14" y="3" width="7" height="18" rx="1.5" />
+                        </svg>
+                      </div>
+                      <b style={{ display: 'block', color: '#fff', fontSize: '18px' }}>Start a new version comparison with ECHO</b>
+                      <p style={{ fontSize: '14.5px', lineHeight: '1.65', marginTop: '10px', marginBottom: 0 }}>
+                        Attach two or more document versions — or paste clauses below — to detect added, removed, and modified terms along with semantic business impact.
                       </p>
                     </div>
                   )}
