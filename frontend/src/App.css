@@ -5721,9 +5721,3 @@ html, body {
     height: 100% !important;
   }
 }
-
-/* Slightly more upward breathing room when scrolling to top of last AI response */
-.bubble.ai,
-.msg.ai {
-  scroll-margin-top: 38px;
-}
